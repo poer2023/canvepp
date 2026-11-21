@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>C · 按画布汇总</title>
+  <script src="./support.js"></script>
+  <link rel="stylesheet" href="/_blob/647f288bb2baaf16595c2e0f9527fa71">
+</head>
+<body>
+<x-dc>
+<helmet><style>body { margin: 0; }</style></helmet>
+<main class="notice-sheet" data-theme="{{theme}}">
+  <header class="sheet-header">
+    <div>
+      <h1>按画布汇总</h1>
+      <p>单组先报画布，多组列出各张画布新增了多少图片。</p>
+    </div>
+    <div class="appearance-control" role="group" aria-label="通知主题">
+      <button type="button" aria-pressed="{{isLight}}" onClick="{{light}}">浅色</button>
+      <button type="button" aria-pressed="{{isDark}}" onClick="{{dark}}">深色</button>
+    </div>
+  </header>
+
+  <div class="notice-matrix">
+    <div></div>
+    <div class="platform-heading"><h2>macOS</h2><span>已展开</span></div>
+    <div class="platform-heading"><h2>Windows</h2><span>带操作按钮</span></div>
+
+    <div class="scenario-name"><strong>单组单张</strong><span>1 组 · 1 张</span></div>
+    <div class="desktop-sample macos">
+      <article class="notice-card">
+        <div class="notice-attribution"><span class="brand-mark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="4.5" y="4.5" width="9" height="9" rx="1.5"/><path d="M2.5 10V4a1.5 1.5 0 0 1 1.5-1.5h6"/></svg></span>Canvepp<span class="age">刚刚</span></div>
+        <div><strong class="notification-title">「海岸色稿」已更新</strong><span class="notification-body">已生成 1 张图片</span></div>
+        <div class="notice-action-row"><button class="notice-action" type="button" onClick="{{openOne}}">查看图片</button></div>
+      </article>
+    </div>
+    <div class="desktop-sample windows">
+      <article class="notice-card">
+        <div class="notice-attribution"><span class="brand-mark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="4.5" y="4.5" width="9" height="9" rx="1.5"/><path d="M2.5 10V4a1.5 1.5 0 0 1 1.5-1.5h6"/></svg></span>Canvepp<span class="age">刚刚</span></div>
+        <div><strong class="notification-title">「海岸色稿」已更新</strong><span class="notification-body">已生成 1 张图片</span></div>
+        <div class="notice-action-row"><button class="notice-action" type="button" onClick="{{openOne}}">查看图片</button></div>
+      </article>
+    </div>
+
+    <div class="scenario-name"><strong>单组多张</strong><span>1 组 · 4 张</span></div>
+    <div class="desktop-sample macos">
+      <article class="notice-card">
+        <div class="notice-attribution"><span class="brand-mark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="4.5" y="4.5" width="9" height="9" rx="1.5"/><path d="M2.5 10V4a1.5 1.5 0 0 1 1.5-1.5h6"/></svg></span>Canvepp<span class="age">刚刚</span></div>
+        <div><strong class="notification-title">「海岸色稿」已更新</strong><span class="notification-body">已生成 4 张图片</span></div>
+        <div class="notice-action-row"><button class="notice-action" type="button" onClick="{{openSet}}">查看本组</button></div>
+      </article>
+    </div>
+    <div class="desktop-sample windows">
+      <article class="notice-card">
+        <div class="notice-attribution"><span class="brand-mark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="4.5" y="4.5" width="9" height="9" rx="1.5"/><path d="M2.5 10V4a1.5 1.5 0 0 1 1.5-1.5h6"/></svg></span>Canvepp<span class="age">刚刚</span></div>
+        <div><strong class="notification-title">「海岸色稿」已更新</strong><span class="notification-body">已生成 4 张图片</span></div>
+        <div class="notice-action-row"><button class="notice-action" type="button" onClick="{{openSet}}">查看本组</button></div>
+      </article>
+    </div>
+
+    <div class="scenario-name"><strong>多组生成</strong><span>3 组 · 8 张</span></div>
+    <div class="desktop-sample macos">
+      <article class="notice-card">
+        <div class="notice-attribution"><span class="brand-mark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="4.5" y="4.5" width="9" height="9" rx="1.5"/><path d="M2.5 10V4a1.5 1.5 0 0 1 1.5-1.5h6"/></svg></span>Canvepp<span class="age">刚刚</span></div>
+        <div>
+          <strong class="notification-title">3 组已完成，共 8 张图片</strong>
+          <span class="notification-body">海岸色稿 5 张 · 山地色稿 3 张</span>
+        </div>
+        <div class="notice-action-row"><button class="notice-action" type="button" onClick="{{openBatch}}">查看本批</button></div>
+      </article>
+    </div>
+    <div class="desktop-sample windows">
+      <article class="notice-card">
+        <div class="notice-attribution"><span class="brand-mark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><rect x="4.5" y="4.5" width="9" height="9" rx="1.5"/><path d="M2.5 10V4a1.5 1.5 0 0 1 1.5-1.5h6"/></svg></span>Canvepp<span class="age">刚刚</span></div>
+        <div>
+          <strong class="notification-title">3 组已完成，共 8 张图片</strong>
+          <span class="notification-body">海岸色稿 5 张 · 山地色稿 3 张</span>
+        </div>
+        <div class="notice-action-row"><button class="notice-action" type="button" onClick="{{openBatch}}">查看本批</button></div>
+      </article>
+    </div>
+  </div>
+
+  <div class="click-destination" aria-live="polite"><strong>打开去向</strong><span>{{destination}}</span></div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":980,"height":850}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const theme = this.state?.theme ?? "light";
+    return {
+      theme,
+      isLight: theme === "light",
+      isDark: theme === "dark",
+      light: () => this.setState({ theme: "light" }),
+      dark: () => this.setState({ theme: "dark" }),
+      destination: this.state?.destination ?? "点按通知按钮查看去向",
+      openOne: () => this.setState({ destination: "海岸色稿 → 定位新生成的图片" }),
+      openSet: () => this.setState({ destination: "海岸色稿 → 查看本组 4 张生成结果" }),
+      openBatch: () => this.setState({ destination: "本批生成记录 → 海岸色稿 2 组 5 张 · 山地色稿 1 组 3 张" })
+    };
+  }
+}
+</script>
+</body>
+</html>

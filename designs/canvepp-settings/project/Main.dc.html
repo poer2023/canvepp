@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>A · 纵向清单</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    .win, .win * { box-sizing: border-box; }
+    .win {
+      --rail: #f6f6f6; --panel: #ffffff; --text: #242424; --muted: #626262;
+      --selected: #e9e9e9; --hover: #ededed; --control: #f3f3f3; --rule: #e9e9e9;
+      --border: #d7d7d7; --outline: #737373; --off: #dddddd; --accent: #242424;
+      --on-accent: #ffffff; --warn: #805719; --disabled: #777777;
+      color-scheme: light; color: var(--text); background: var(--rail);
+    }
+    .win[data-theme="dark"] {
+      --rail: #292929; --panel: #202020; --text: #f2f2f2; --muted: #b4b4b4;
+      --selected: #3c3c3c; --hover: #383838; --control: #2c2c2c; --rule: #363636;
+      --border: #4e4e4e; --outline: #a2a2a2; --off: #595959; --accent: #f3f3f3;
+      --on-accent: #202020; --warn: #ebc688; --disabled: #a1a1a1;
+      color-scheme: dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      .win[data-theme="system"] {
+        --rail: #292929; --panel: #202020; --text: #f2f2f2; --muted: #b4b4b4;
+        --selected: #3c3c3c; --hover: #383838; --control: #2c2c2c; --rule: #363636;
+        --border: #4e4e4e; --outline: #a2a2a2; --off: #595959; --accent: #f3f3f3;
+        --on-accent: #202020; --warn: #ebc688; --disabled: #a1a1a1;
+        color-scheme: dark;
+      }
+    }
+    .win button, .win input { font: inherit; color: inherit; }
+    .win button { border: 0; background: transparent; cursor: pointer; }
+    .win button:disabled { cursor: default; }
+    .win :is(button,input):focus-visible { outline: 2px solid var(--outline); outline-offset: 2px; }
+    .window-chrome span { width: 11px; height: 11px; border-radius: 50%; }
+    .window-chrome span:nth-child(1) { background: #ff6159; }
+    .window-chrome span:nth-child(2) { background: #ffbd2e; }
+    .window-chrome span:nth-child(3) { background: #28c840; }
+    .rail { width: 166px; padding: 11px 9px 12px; flex: 0 0 auto; }
+    .rail-title { font-size: 12px; font-weight: 500; color: var(--muted); margin: 7px 8px 13px; }
+    .rail button { min-height: 30px; padding: 0 9px; text-align: left; border-radius: 6px; color: var(--muted); }
+    .rail button:hover { background: var(--hover); color: var(--text); }
+    .rail button[aria-pressed="true"] { background: var(--selected); color: var(--text); font-weight: 550; }
+    .rail .icon { margin-right: 1px; }
+    .rail .disclosure { margin-left: auto; }
+    .rail .nav-branch {
+      display: flex; flex-direction: column; gap: 2px; padding: 2px 0 4px 9px;
+      margin: 0 0 1px 16px; border-left: 1px solid var(--border);
+    }
+    .rail .nav-branch button { font-size: 12px; min-height: 28px; }
+    .pane {
+      margin: 0 6px 6px 0; min-width: 0; flex: 1;
+      border-radius: 10px; background: var(--panel);
+      overflow: auto;
+      scrollbar-gutter: stable;
+    }
+    .pane::-webkit-scrollbar { width: 11px; }
+    .pane::-webkit-scrollbar-thumb {
+      border: solid transparent; border-width: 2px 5px 2px 4px; border-radius: 8px;
+      background-clip: padding-box;
+    }
+    .pane:is(:hover,:focus-within)::-webkit-scrollbar-thumb { background-color: var(--outline); }
+    .sheet { margin: 0 auto; padding: 20px 20px 26px; max-width: 690px; }
+    .group-stack { min-width: 0; display: flex; flex-direction: column; gap: 23px; }
+    .group-title { font-size: 14px; line-height: 20px; font-weight: 640; margin: 0; }
+    .group-rows > * + * { border-top: 1px solid var(--rule); }
+    .row {
+      min-height: 43px; display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; padding: 5px 0;
+    }
+    .row-label { display: flex; align-items: center; gap: 9px; min-width: 0; line-height: 18px; }
+    .icon { flex: none; vertical-align: middle; }
+    .row-label .icon { color: var(--muted); }
+    .row-controls, .action-pair { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+    .row-controls { flex: 0 0 auto; max-width: 62%; }
+    .status { color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .status.warning { color: var(--warn); }
+    .app-version, .gesture { font-size: 12px; }
+    .app-version { font-variant-numeric: tabular-nums; }
+    .gesture { white-space: normal; text-align: right; }
+    .win .action {
+      background: var(--control); padding: 0 10px; border-radius: 6px;
+      font-size: 12px; height: 30px; white-space: nowrap; flex: none;
+    }
+    .win .action:hover:not(:disabled) { background: var(--hover); }
+    .win .action[aria-disabled="true"] { cursor: default; }
+    .win .action:disabled { color: var(--disabled); }
+    .win .primary:disabled { background: var(--selected); color: var(--disabled); }
+    .selector { position: relative; }
+    .win .select {
+      width: 144px; height: 31px; border: 1px solid var(--border); border-radius: 6px;
+      padding: 0 8px; display: flex; gap: 7px; align-items: center;
+      font-size: 12px; white-space: nowrap;
+    }
+    .select > .icon:last-child { margin-left: auto; color: var(--muted); }
+    .win :is(.select,.option):hover { background: var(--hover); }
+    .select-menu {
+      position: absolute; right: 0; top: calc(100% + 4px); z-index: 1; width: 170px; padding: 4px;
+      border: 1px solid var(--border); background: var(--panel); border-radius: 7px;
+    }
+    .win .option {
+      display: flex; align-items: center; gap: 8px; text-align: left; width: 100%;
+      height: 29px; padding: 0 7px; border-radius: 4px; font-size: 12px; white-space: nowrap;
+    }
+    .option[aria-pressed="true"] { background: var(--control); }
+    .option span { flex: 1; }
+    .win .switch { display: grid; place-items: center; padding: 0; width: 34px; height: 30px; border-radius: 6px; }
+    .track {
+      display: flex; align-items: center; justify-content: flex-start; padding: 0 3px;
+      width: 32px; height: 18px; border-radius: 9px; background: var(--off);
+    }
+    .knob { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--muted); }
+    .switch[aria-checked="true"] .track { background: var(--accent); justify-content: flex-end; }
+    .switch[aria-checked="true"] .knob { background: var(--on-accent); }
+    .switch:hover .track { outline: 1px solid var(--outline); }
+    .credential { padding: 11px 0 0; display: flex; flex-direction: column; gap: 8px; }
+    .credential-title, .key-form, .key-actions { display: flex; align-items: center; gap: 8px; }
+    .credential-title { justify-content: space-between; }
+    .key-form input {
+      min-width: 0; flex: 1; height: 32px; margin: 0; padding: 0 9px;
+      border: 1px solid var(--border); border-radius: 6px; font-size: 12px; background: var(--panel);
+    }
+    .key-form input::placeholder { opacity: 1; color: var(--muted); }
+    .key-form .action { height: 32px; }
+    .key-actions { justify-content: flex-end; gap: 7px; }
+    .keycaps { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 5px; }
+    .keycaps { font-variant-numeric: tabular-nums; }
+    .keycaps kbd {
+      background: var(--control); border-radius: 4px; padding: 3px 6px;
+      font: inherit; font-size: 12px; line-height: 16px; white-space: nowrap;
+    }
+    .key-separator { color: var(--muted); font-size: 11px; }
+    .variant-b .side-by-side { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr); gap: 17px; }
+    .variant-b .side-by-side > .right { border-left: 1px solid var(--rule); padding-left: 17px; }
+    .variant-b .row-account {
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); gap: 6px;
+    }
+    .variant-b .row-account .row-controls { display: contents; }
+    .variant-b .row-account .status { justify-self: end; }
+    .variant-b .row-account .action-pair { grid-column: 1 / -1; justify-self: end; }
+    .variant-b .row-permission .action-pair { flex-wrap: wrap; }
+    .variant-c .rail { width: 174px; }
+    .variant-c .sheet { max-width: 630px; }
+    .variant-c .group-stack { gap: 22px; }
+    .variant-c .focused .group-title { font-size: 17px; line-height: 24px; }
+    .variant-c .focused .group { gap: 11px !important; }
+    @media (max-width: 770px) {
+      .variant-b .side-by-side { display: flex; flex-direction: column; gap: 23px; }
+      .variant-b .side-by-side > .right { border: 0; padding-left: 0; }
+      .variant-b .row-account { display: flex; gap: 10px; }
+      .variant-b .row-account .row-controls { display: flex; }
+    }
+    @media (max-width: 700px) {
+      .rail { width: 140px; }
+      .variant-c .rail { width: 150px; }
+    }
+    .theme-choices { display: flex; justify-content: end; flex-wrap: wrap; gap: 6px; }
+    .win .theme-tile { width: 100px; height: 73px; padding: 5px 6px; border: 1px solid transparent; border-radius: 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+    .win .theme-tile:hover { background: var(--hover); }
+    .win .theme-tile[aria-pressed="true"] { background: var(--control); border-color: var(--outline); }
+    .theme-preview { width: 86px; height: 42px; display: flex; overflow: hidden; border-radius: 5px; border: 1px solid #bbb; }
+    .mini-window { flex: 1; min-width: 0; display: flex; gap: 3px; padding: 4px 3px 3px; background: var(--mini-shell); }
+    .mini-window.day { --mini-shell: #f6f6f6; --mini-paper: #fff; --mini-line: #d6d6d6; }
+    .mini-window.night { --mini-shell: #292929; --mini-paper: #202020; --mini-line: #565656; }
+    .mini-rail { width: 23%; display: flex; flex-direction: column; align-items: start; gap: 4px; padding-top: 4px; }
+    .mini-rail i { width: 85%; height: 2px; background: var(--mini-line); border-radius: 1px; }
+    .mini-rail i:nth-child(2) { width: 72%; }
+    .mini-work { flex: 1; min-width: 0; border-radius: 3px; background: var(--mini-paper); position: relative; display: flex; justify-content: center; align-items: center; gap: 3px; }
+    .mini-work i { width: 18%; height: 6px; border: 1px solid var(--mini-line); border-radius: 2px; }
+    .theme-caption { display: flex; align-items: center; gap: 3px; font-size: 11px; line-height: 16px; white-space: nowrap; }
+    .theme-check { display: inline-flex; visibility: hidden; }
+    .theme-tile[aria-pressed="true"] .theme-check { visibility: visible; }
+    .account-value { color: var(--muted); font-size: 12px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .api-setup { position: relative; }
+    .api-menu { width: 200px; }
+    .api-menu .option { height: 31px; }
+    .api-editor { display: flex; flex-direction: column; gap: 6px; padding: 5px 0 9px; }
+    .api-editor label { color: var(--muted); font-size: 11px; }
+    .win .key-manage { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; }
+    .win .key-manage:hover { background: var(--hover); }
+    .win .action.primary:not(:disabled) { color: var(--on-accent); background: var(--accent); }
+    .key-confirm { width: 240px; padding: 10px; }
+    .key-confirm p { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+    .key-remove { color: #a22d39 !important; }
+    [data-theme="dark"] .key-remove { color: #f1a1a8 !important; }
+    .win a.action { display: flex; align-items: center; color: inherit; text-decoration: none; }
+    @media (max-width: 600px) { .theme-tile { max-width: 90px; } .theme-preview { max-width: 100%; } }
+  </style>
+</helmet>
+<main class="win variant-a" data-theme="{{ themeMode }}" aria-label="Canvepp 设置" style="width:100%;height:100vh;display:flex;flex-direction:column;overflow:hidden;font:13px/1.4 -apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <div class="window-chrome" aria-hidden="true" style="height:28px;flex:none;display:flex;align-items:center;gap:8px;padding:0 13px;">
+    <span></span><span></span><span></span>
+  </div>
+  <div style="display:flex;flex:1;min-height:0;">
+    <nav class="rail" aria-label="设置分类">
+      <div class="rail-title">设置</div>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <button type="button" aria-pressed="{{ isGeneral }}" onClick="{{ onGeneral }}" style="display:flex;align-items:center;gap:7px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h7m4 0h7M3 12h5m4 0h9M3 20h9m4 0h5M14 2v4m-6 4v4m8 4v4"></path></svg><span>通用</span></button>
+
+        <button type="button" aria-pressed="{{ isData }}" onClick="{{ onData }}" style="display:flex;align-items:center;gap:7px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"></path></svg><span>数据</span></button>
+        <button type="button" aria-pressed="{{ isShortcuts }}" onClick="{{ onShortcuts }}" style="display:flex;align-items:center;gap:7px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M9 16h6"></path></svg><span>快捷键</span></button>
+      </div>
+    </nav>
+    <div class="pane" ref="{{ panelRef }}" tabindex="0" role="region" aria-label="设置正文">
+      <div class="sheet {{ focusClass }}">
+        <sc-if value="{{ isGeneral }}" hint-placeholder-val="{{ true }}">
+<div class="group-stack"><section class="group" aria-labelledby="appearance-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="appearance-heading">外观</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8m-4-4v4"></path></svg><span>主题</span></span>
+  <div class="theme-choices" role="group" aria-label="选择主题">
+    <button class="theme-tile" type="button" aria-pressed="{{ systemSelected }}" onClick="{{ chooseSystem }}">
+      <span class="theme-preview"><span class="mini-window day" aria-hidden="true"><span class="mini-rail"><i></i><i></i><i></i></span><span class="mini-work"><i></i><i></i></span></span><span class="mini-window night" aria-hidden="true"><span class="mini-rail"><i></i><i></i><i></i></span><span class="mini-work"><i></i><i></i></span></span></span>
+      <span class="theme-caption">跟随系统<span class="theme-check" aria-hidden="true"><svg class="icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg></span></span>
+    </button>
+    <button class="theme-tile" type="button" aria-pressed="{{ lightSelected }}" onClick="{{ chooseLight }}">
+      <span class="theme-preview"><span class="mini-window day" aria-hidden="true"><span class="mini-rail"><i></i><i></i><i></i></span><span class="mini-work"><i></i><i></i></span></span></span>
+      <span class="theme-caption">浅色模式<span class="theme-check" aria-hidden="true"><svg class="icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg></span></span>
+    </button>
+    <button class="theme-tile" type="button" aria-pressed="{{ darkSelected }}" onClick="{{ chooseDark }}">
+      <span class="theme-preview"><span class="mini-window night" aria-hidden="true"><span class="mini-rail"><i></i><i></i><i></i></span><span class="mini-work"><i></i><i></i></span></span></span>
+      <span class="theme-caption">深色模式<span class="theme-check" aria-hidden="true"><svg class="icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg></span></span>
+    </button>
+  </div>
+</div>
+<div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7Zm-10 10 10 5 10-5M2 17l10 5 10-5"></path></svg><span>磨砂半透明</span></span>
+  <div class="row-controls"><button class="switch" type="button" role="switch" aria-label="磨砂半透明" aria-checked="{{ frosted }}" onClick="{{ toggleFrosted }}" title="应用于侧栏、菜单和工具栏">
+  <span class="track" aria-hidden="true"><span class="knob"></span></span>
+</button></div>
+</div></div>
+</section><section class="group" aria-labelledby="account-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="account-heading">账户与助手</h2>
+  <div class="group-rows"><div class="row row-account">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"></path></svg><span>ChatGPT 账户</span></span>
+  <div class="row-controls">
+    <sc-if value="{{ signedOut }}" hint-placeholder-val="{{ true }}"><button type="button" class="action" onClick="{{ demoSignIn }}" title="预览登录成功的样式">登录</button></sc-if>
+    <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ false }}"><span class="account-value" title="studio@example.com">studio@example.com</span></sc-if>
+  </div>
+</div>
+<div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a2.5 2.5 0 0 1-2.5 2.5H8l-5 4V5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5z"></path></svg><span>助手输入条</span></span>
+  <div class="row-controls"><a class="action" href="Assistant.dc.html">打开助手</a></div>
+</div>
+<div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M9 16h6"></path></svg><span>三击空格</span></span>
+  <div class="row-controls"><button class="switch" type="button" role="switch" aria-label="全局三击空格" aria-checked="{{ hotkey }}" onClick="{{ toggleHotkey }}" title="连按三次空格打开助手输入条">
+  <span class="track" aria-hidden="true"><span class="knob"></span></span>
+</button></div>
+</div>
+<sc-if value="{{ hotkey }}" hint-placeholder-val="{{ true }}">
+<div class="row row-permission">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-3.5 7-10V5l-7-3-7 3v7c0 6.5 7 10 7 10Z"></path><path d="m9 12 2 2 4-4"></path></svg><span>输入监控</span></span>
+  <div class="row-controls"><span class="action-pair"><button type="button" class="action" aria-disabled="true" title="演示：检查权限">检查权限</button><button type="button" class="action" aria-disabled="true" title="演示：系统设置">系统设置</button></span></div>
+</div>
+</sc-if></div>
+</section><section class="group" aria-labelledby="funding-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="funding-heading">模型额度</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path></svg><span>生图额度</span></span>
+  <div class="row-controls"><div class="selector" onBlur="{{ dismissOnBlur }}" onKeyDown="{{ dismissOnEscape }}">
+  <button type="button" class="select" aria-label="生图额度来源" aria-expanded="{{ image.open }}" title="生图额度来源" onClick="{{ image.toggle }}">
+    <sc-if value="{{ image.chat.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.78 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.76 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.78 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg><span>ChatGPT 订阅</span>
+</sc-if>
+    <sc-if value="{{ image.code.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 7 3-3m0 6 3-3M7 17l-2 2m1-5 8-8 4 4-8 8H7Z"></path></svg><span>OpenAI API</span>
+</sc-if>
+    <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+  </button>
+  <sc-if value="{{ image.open }}" hint-placeholder-val="{{ false }}">
+<div class="select-menu" role="group" aria-label="生图额度来源的选项">
+    <button class="option" type="button" aria-pressed="{{ image.chat.selected }}" onClick="{{ image.chat.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.78 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.76 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.78 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg><span>ChatGPT 订阅</span><sc-if value="{{ image.chat.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+    <button class="option" type="button" aria-pressed="{{ image.code.selected }}" onClick="{{ image.code.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 7 3-3m0 6 3-3M7 17l-2 2m1-5 8-8 4 4-8 8H7Z"></path></svg><span>OpenAI API</span><sc-if value="{{ image.code.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+  </div>
+</sc-if>
+</div></div>
+</div>
+<div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 10h12M4 14h16M4 18h10"></path></svg><span>摘要额度</span></span>
+  <div class="row-controls"><div class="selector" onBlur="{{ dismissOnBlur }}" onKeyDown="{{ dismissOnEscape }}">
+  <button type="button" class="select" aria-label="摘要额度来源" aria-expanded="{{ summary.open }}" title="摘要额度来源" onClick="{{ summary.toggle }}">
+    <sc-if value="{{ summary.chat.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.78 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.76 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.78 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg><span>ChatGPT 订阅</span>
+</sc-if>
+    <sc-if value="{{ summary.code.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 7 3-3m0 6 3-3M7 17l-2 2m1-5 8-8 4 4-8 8H7Z"></path></svg><span>OpenAI API</span>
+</sc-if>
+    <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+  </button>
+  <sc-if value="{{ summary.open }}" hint-placeholder-val="{{ false }}">
+<div class="select-menu" role="group" aria-label="摘要额度来源的选项">
+    <button class="option" type="button" aria-pressed="{{ summary.chat.selected }}" onClick="{{ summary.chat.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.78 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.76 4 4 0 0 1-4.78 4.78 4 4 0 0 1-6.74 0 4 4 0 0 1-4.78-4.78 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg><span>ChatGPT 订阅</span><sc-if value="{{ summary.chat.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+    <button class="option" type="button" aria-pressed="{{ summary.code.selected }}" onClick="{{ summary.code.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 7 3-3m0 6 3-3M7 17l-2 2m1-5 8-8 4 4-8 8H7Z"></path></svg><span>OpenAI API</span><sc-if value="{{ summary.code.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+  </div>
+</sc-if>
+</div></div>
+</div>
+<div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="5"></circle><path d="m12 11 8-8 2 2-3 3 2 2-2 2-2-2-3 3"></path></svg><span>OpenAI API Key</span></span>
+  <div class="row-controls">
+    <sc-if value="{{ keyMissing }}" hint-placeholder-val="{{ true }}">
+      <span class="status {{ keyTone }}">未配置</span>
+      <button type="button" class="action" onClick="{{ editKey }}">添加密钥</button>
+    </sc-if>
+    <sc-if value="{{ keyPresent }}" hint-placeholder-val="{{ false }}">
+      <span class="status" style="font-size:12px">已保存</span>
+      <div class="api-setup">
+        <button type="button" class="key-manage" aria-label="管理密钥" title="管理密钥" aria-expanded="{{ keyPopup }}" onClick="{{ toggleKeyMenu }}"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1" fill="currentColor"></circle><circle cx="12" cy="12" r="1" fill="currentColor"></circle><circle cx="19" cy="12" r="1" fill="currentColor"></circle></svg></button>
+        <sc-if value="{{ keyMenu }}" hint-placeholder-val="{{ false }}">
+          <div class="select-menu api-menu" role="group" aria-label="密钥操作">
+            <button type="button" class="option" onClick="{{ editKey }}">更换密钥</button>
+            <button type="button" class="option" onClick="{{ closeKeyPane }}">检查可用性</button>
+            <button type="button" class="option key-remove" onClick="{{ confirmRemove }}">移除密钥…</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ keyConfirm }}" hint-placeholder-val="{{ false }}">
+          <div class="select-menu key-confirm" role="group" aria-label="确认移除密钥">
+            <p>移除此设备保存的 OpenAI API Key？</p>
+            <div class="key-actions"><button type="button" class="action" onClick="{{ closeKeyPane }}">取消</button><button type="button" class="action key-remove" onClick="{{ removeKey }}">移除</button></div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+</div>
+<sc-if value="{{ keyEditing }}" hint-placeholder-val="{{ false }}">
+  <div class="api-editor">
+    <label for="key-preview">OpenAI API Key</label>
+    <div class="key-form">
+      <input type="password" id="key-preview" readonly="readonly" value="demo-only" title="演示密钥">
+      <button type="button" class="action" onClick="{{ closeKeyPane }}">取消</button>
+      <button type="button" class="action primary" onClick="{{ saveKey }}">保存</button>
+    </div>
+  </div>
+</sc-if></div>
+</section></div>
+</sc-if>
+        <sc-if value="{{ isData }}" hint-placeholder-val="{{ false }}">
+<div class="group-stack"><section class="group" aria-labelledby="backup-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="backup-heading">备份与恢复</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg><span>完整备份</span></span>
+  <div class="row-controls"><button type="button" class="action" aria-disabled="true" title="包含画布、原图、历史记录和回收站">导出备份</button></div>
+</div>
+<div class="row row-import">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg><span>导入到当前资料库</span></span>
+  <div class="row-controls"><button type="button" class="action" aria-disabled="true" title="合并旧版画布或从备份目录导入">导入画布或备份</button></div>
+</div></div>
+</section><section class="group" aria-labelledby="app-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="app-heading">应用</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18m-12 0v11"></path></svg><span>版本</span></span>
+  <div class="row-controls"><span class="status app-version">Canvepp 0.6.9</span></div>
+</div></div>
+</section></div>
+</sc-if>
+        <sc-if value="{{ isShortcuts }}" hint-placeholder-val="{{ false }}">
+<div class="group-stack"><section class="group" aria-labelledby="adobe-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="adobe-heading">Adobe 快照</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><span>导入当前 Photoshop / Illustrator 画布</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ ⌥ ⇧ 9</kbd></span></div>
+</div></div>
+</section><section class="group" aria-labelledby="canvas-keys-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="canvas-keys-heading">画布操作</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><span>新建图片</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ N</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>导入图片</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ O</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>复制 / 粘贴</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ C</kbd><span class="key-separator">/</span><kbd>⌘ V</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>撤销 / 重做</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ Z</kbd><span class="key-separator">/</span><kbd>⇧ ⌘ Z</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>全选图片</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ A</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>移入回收站</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌫</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>打开设置</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ ,</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>助手输入条</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ ⇧ Space</kbd><span class="key-separator">/</span><kbd>三击空格</kbd></span></div>
+</div></div>
+</section><section class="group" aria-labelledby="gestures-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="gestures-heading">手势</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><span>缩放画布</span></span>
+  <div class="row-controls"><span class="status gesture">滚轮 / 双指捏合</span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>移动画布</span></span>
+  <div class="row-controls"><span class="status gesture">空格拖动 / 鼠标中键</span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>多选图片</span></span>
+  <div class="row-controls"><span class="status gesture">框选 / Shift 点击</span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>吸附图片面板</span></span>
+  <div class="row-controls"><span class="status gesture">拖动标题，靠边松开</span></div>
+</div></div>
+</section></div>
+</sc-if>
+      </div>
+    </div>
+  </div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":850,"height":704}}'>
+class Component extends DCLogic {
+  state = { tab: 'general', section: '', theme: 'light', image: 'chat', summary: 'code', frosted: true, hotkey: true, open: '', signedIn: false, keyPresent: false, keyPane: '' };
+
+  choosePage(tab, section = '') {
+    this.setState({ tab, section, open: '', keyPane: '' });
+    if (this.pane) this.pane.scrollTop = 0;
+  }
+
+  selector(field, choiceKeys) {
+    const select = {
+      open: this.state.open === field,
+      toggle: () => this.setState({ open: this.state.open === field ? '' : field }),
+    };
+    for (const key of choiceKeys) {
+      select[key] = {
+        selected: this.state[field] === key,
+        choose: (event) => {
+          event.currentTarget.closest('.selector')?.querySelector('.select')?.focus();
+          this.setState({ [field]: key, open: '' });
+        },
+      };
+    }
+    return select;
+  }
+
+  renderVals() {
+    const { tab, section, theme, frosted, hotkey, image, summary } = this.state;
+    return {
+      isGeneral: tab === 'general',
+      isData: tab === 'data',
+      isShortcuts: tab === 'shortcuts',
+      isOverview: tab === 'general' && !section,
+      onGeneral: () => this.choosePage('general'),
+      onData: () => this.choosePage('data'),
+      onShortcuts: () => this.choosePage('shortcuts'),
+      onAppearance: () => this.choosePage('general', 'appearance'),
+      onAccount: () => this.choosePage('general', 'account'),
+      onFunding: () => this.choosePage('general', 'funding'),
+      appearanceSelected: section === 'appearance',
+      accountSelected: section === 'account',
+      fundingSelected: section === 'funding',
+      showAppearance: !section || section === 'appearance',
+      showAccount: !section || section === 'account',
+      showFunding: !section || section === 'funding',
+      focusClass: section ? 'focused' : '',
+      themeMode: theme,
+      systemSelected: theme === 'system',
+      lightSelected: theme === 'light',
+      darkSelected: theme === 'dark',
+      chooseSystem: () => this.setState({ theme: 'system' }),
+      chooseLight: () => this.setState({ theme: 'light' }),
+      chooseDark: () => this.setState({ theme: 'dark' }),
+      signedIn: this.state.signedIn,
+      signedOut: !this.state.signedIn,
+      demoSignIn: () => this.setState({ signedIn: true }),
+      keyMissing: !this.state.keyPresent && this.state.keyPane !== 'edit',
+      keyPresent: this.state.keyPresent,
+      keyEditing: this.state.keyPane === 'edit',
+      keyMenu: this.state.keyPane === 'menu',
+      keyConfirm: this.state.keyPane === 'remove',
+      keyPopup: this.state.keyPane === 'menu' || this.state.keyPane === 'remove',
+      editKey: () => this.setState({ keyPane: 'edit', open: '' }),
+      closeKeyPane: () => this.setState({ keyPane: '' }),
+      toggleKeyMenu: () => this.setState({ keyPane: this.state.keyPane ? '' : 'menu', open: '' }),
+      confirmRemove: () => this.setState({ keyPane: 'remove' }),
+      removeKey: () => this.setState({ keyPresent: false, keyPane: '' }),
+      saveKey: () => this.setState({ keyPresent: true, keyPane: '' }),
+      image: this.selector('image', ['chat', 'code']),
+      summary: this.selector('summary', ['chat', 'code']),
+      keyTone: image === 'code' || summary === 'code' ? 'warning' : '',
+      frosted,
+      hotkey,
+      toggleFrosted: () => this.setState({ frosted: !frosted }),
+      toggleHotkey: () => this.setState({ hotkey: !hotkey }),
+      panelRef: (element) => { this.pane = element; },
+      dismissOnBlur: (event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) this.setState({ open: '' });
+      },
+      dismissOnEscape: (event) => {
+        if (event.key === 'Escape' && this.state.open) {
+          event.stopPropagation();
+          event.currentTarget.querySelector('.select')?.focus();
+          this.setState({ open: '' });
+        }
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

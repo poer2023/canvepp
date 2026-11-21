@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>B · 并行双栏</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    .win, .win * { box-sizing: border-box; }
+    .win {
+      --rail: #f6f6f6; --panel: #ffffff; --text: #242424; --muted: #626262;
+      --selected: #e9e9e9; --hover: #ededed; --control: #f3f3f3; --rule: #e9e9e9;
+      --border: #d7d7d7; --outline: #737373; --off: #dddddd; --accent: #242424;
+      --on-accent: #ffffff; --warn: #805719; --disabled: #777777;
+      color-scheme: light; color: var(--text); background: var(--rail);
+    }
+    .win[data-theme="dark"] {
+      --rail: #292929; --panel: #202020; --text: #f2f2f2; --muted: #b4b4b4;
+      --selected: #3c3c3c; --hover: #383838; --control: #2c2c2c; --rule: #363636;
+      --border: #4e4e4e; --outline: #a2a2a2; --off: #595959; --accent: #f3f3f3;
+      --on-accent: #202020; --warn: #ebc688; --disabled: #a1a1a1;
+      color-scheme: dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      .win[data-theme="system"] {
+        --rail: #292929; --panel: #202020; --text: #f2f2f2; --muted: #b4b4b4;
+        --selected: #3c3c3c; --hover: #383838; --control: #2c2c2c; --rule: #363636;
+        --border: #4e4e4e; --outline: #a2a2a2; --off: #595959; --accent: #f3f3f3;
+        --on-accent: #202020; --warn: #ebc688; --disabled: #a1a1a1;
+        color-scheme: dark;
+      }
+    }
+    .win button, .win input { font: inherit; color: inherit; }
+    .win button { border: 0; background: transparent; cursor: pointer; }
+    .win button:disabled { cursor: default; }
+    .win :is(button,input):focus-visible { outline: 2px solid var(--outline); outline-offset: 2px; }
+    .window-chrome span { width: 11px; height: 11px; border-radius: 50%; }
+    .window-chrome span:nth-child(1) { background: #ff6159; }
+    .window-chrome span:nth-child(2) { background: #ffbd2e; }
+    .window-chrome span:nth-child(3) { background: #28c840; }
+    .rail { width: 166px; padding: 11px 9px 12px; flex: 0 0 auto; }
+    .rail-title { font-size: 12px; font-weight: 500; color: var(--muted); margin: 7px 8px 13px; }
+    .rail button { min-height: 30px; padding: 0 9px; text-align: left; border-radius: 6px; color: var(--muted); }
+    .rail button:hover { background: var(--hover); color: var(--text); }
+    .rail button[aria-pressed="true"] { background: var(--selected); color: var(--text); font-weight: 550; }
+    .rail .icon { margin-right: 1px; }
+    .rail .disclosure { margin-left: auto; }
+    .rail .nav-branch {
+      display: flex; flex-direction: column; gap: 2px; padding: 2px 0 4px 9px;
+      margin: 0 0 1px 16px; border-left: 1px solid var(--border);
+    }
+    .rail .nav-branch button { font-size: 12px; min-height: 28px; }
+    .pane {
+      margin: 0 6px 6px 0; min-width: 0; flex: 1;
+      border-radius: 10px; background: var(--panel);
+      overflow: auto;
+      scrollbar-gutter: stable;
+    }
+    .pane::-webkit-scrollbar { width: 11px; }
+    .pane::-webkit-scrollbar-thumb {
+      border: solid transparent; border-width: 2px 5px 2px 4px; border-radius: 8px;
+      background-clip: padding-box;
+    }
+    .pane:is(:hover,:focus-within)::-webkit-scrollbar-thumb { background-color: var(--outline); }
+    .sheet { margin: 0 auto; padding: 20px 20px 26px; max-width: 690px; }
+    .group-stack { min-width: 0; display: flex; flex-direction: column; gap: 23px; }
+    .group-title { font-size: 14px; line-height: 20px; font-weight: 640; margin: 0; }
+    .group-rows > * + * { border-top: 1px solid var(--rule); }
+    .row {
+      min-height: 43px; display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; padding: 5px 0;
+    }
+    .row-label { display: flex; align-items: center; gap: 9px; min-width: 0; line-height: 18px; }
+    .icon { flex: none; vertical-align: middle; }
+    .row-label .icon { color: var(--muted); }
+    .row-controls, .action-pair { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+    .row-controls { flex: 0 0 auto; max-width: 62%; }
+    .status { color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .status.warning { color: var(--warn); }
+    .app-version, .gesture { font-size: 12px; }
+    .app-version { font-variant-numeric: tabular-nums; }
+    .gesture { white-space: normal; text-align: right; }
+    .win .action {
+      background: var(--control); padding: 0 10px; border-radius: 6px;
+      font-size: 12px; height: 30px; white-space: nowrap; flex: none;
+    }
+    .win .action:hover:not(:disabled) { background: var(--hover); }
+    .win .action[aria-disabled="true"] { cursor: default; }
+    .win .action:disabled { color: var(--disabled); }
+    .win .primary:disabled { background: var(--selected); color: var(--disabled); }
+    .selector { position: relative; }
+    .win .select {
+      width: 144px; height: 31px; border: 1px solid var(--border); border-radius: 6px;
+      padding: 0 8px; display: flex; gap: 7px; align-items: center;
+      font-size: 12px; white-space: nowrap;
+    }
+    .select > .icon:last-child { margin-left: auto; color: var(--muted); }
+    .win :is(.select,.option):hover { background: var(--hover); }
+    .select-menu {
+      position: absolute; right: 0; top: calc(100% + 4px); z-index: 1; width: 170px; padding: 4px;
+      border: 1px solid var(--border); background: var(--panel); border-radius: 7px;
+    }
+    .win .option {
+      display: flex; align-items: center; gap: 8px; text-align: left; width: 100%;
+      height: 29px; padding: 0 7px; border-radius: 4px; font-size: 12px; white-space: nowrap;
+    }
+    .option[aria-pressed="true"] { background: var(--control); }
+    .option span { flex: 1; }
+    .win .switch { display: grid; place-items: center; padding: 0; width: 34px; height: 30px; border-radius: 6px; }
+    .track {
+      display: flex; align-items: center; justify-content: flex-start; padding: 0 3px;
+      width: 32px; height: 18px; border-radius: 9px; background: var(--off);
+    }
+    .knob { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--muted); }
+    .switch[aria-checked="true"] .track { background: var(--accent); justify-content: flex-end; }
+    .switch[aria-checked="true"] .knob { background: var(--on-accent); }
+    .switch:hover .track { outline: 1px solid var(--outline); }
+    .credential { padding: 11px 0 0; display: flex; flex-direction: column; gap: 8px; }
+    .credential-title, .key-form, .key-actions { display: flex; align-items: center; gap: 8px; }
+    .credential-title { justify-content: space-between; }
+    .key-form input {
+      min-width: 0; flex: 1; height: 32px; margin: 0; padding: 0 9px;
+      border: 1px solid var(--border); border-radius: 6px; font-size: 12px; background: var(--panel);
+    }
+    .key-form input::placeholder { opacity: 1; color: var(--muted); }
+    .key-form .action { height: 32px; }
+    .key-actions { justify-content: flex-end; gap: 7px; }
+    .keycaps { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 5px; }
+    .keycaps { font-variant-numeric: tabular-nums; }
+    .keycaps kbd {
+      background: var(--control); border-radius: 4px; padding: 3px 6px;
+      font: inherit; font-size: 12px; line-height: 16px; white-space: nowrap;
+    }
+    .key-separator { color: var(--muted); font-size: 11px; }
+    .variant-b .side-by-side { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr); gap: 17px; }
+    .variant-b .side-by-side > .right { border-left: 1px solid var(--rule); padding-left: 17px; }
+    .variant-b .row-account {
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, auto); gap: 6px;
+    }
+    .variant-b .row-account .row-controls { display: contents; }
+    .variant-b .row-account .status { justify-self: end; }
+    .variant-b .row-account .action-pair { grid-column: 1 / -1; justify-self: end; }
+    .variant-b .row-permission .action-pair { flex-wrap: wrap; }
+    .variant-c .rail { width: 174px; }
+    .variant-c .sheet { max-width: 630px; }
+    .variant-c .group-stack { gap: 22px; }
+    .variant-c .focused .group-title { font-size: 17px; line-height: 24px; }
+    .variant-c .focused .group { gap: 11px !important; }
+    @media (max-width: 770px) {
+      .variant-b .side-by-side { display: flex; flex-direction: column; gap: 23px; }
+      .variant-b .side-by-side > .right { border: 0; padding-left: 0; }
+      .variant-b .row-account { display: flex; gap: 10px; }
+      .variant-b .row-account .row-controls { display: flex; }
+    }
+    @media (max-width: 700px) {
+      .rail { width: 140px; }
+      .variant-c .rail { width: 150px; }
+    }
+  </style>
+</helmet>
+<main class="win variant-b" data-theme="{{ themeMode }}" aria-label="Canvepp 设置" style="width:100%;height:100vh;display:flex;flex-direction:column;overflow:hidden;font:13px/1.4 -apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',system-ui,sans-serif;">
+  <div class="window-chrome" aria-hidden="true" style="height:28px;flex:none;display:flex;align-items:center;gap:8px;padding:0 13px;">
+    <span></span><span></span><span></span>
+  </div>
+  <div style="display:flex;flex:1;min-height:0;">
+    <nav class="rail" aria-label="设置分类">
+      <div class="rail-title">设置</div>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <button type="button" aria-pressed="{{ isGeneral }}" onClick="{{ onGeneral }}" style="display:flex;align-items:center;gap:7px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h7m4 0h7M3 12h5m4 0h9M3 20h9m4 0h5M14 2v4m-6 4v4m8 4v4"></path></svg><span>通用</span></button>
+
+        <button type="button" aria-pressed="{{ isData }}" onClick="{{ onData }}" style="display:flex;align-items:center;gap:7px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"></path></svg><span>数据</span></button>
+        <button type="button" aria-pressed="{{ isShortcuts }}" onClick="{{ onShortcuts }}" style="display:flex;align-items:center;gap:7px;"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M9 16h6"></path></svg><span>快捷键</span></button>
+      </div>
+    </nav>
+    <div class="pane" ref="{{ panelRef }}" tabindex="0" role="region" aria-label="设置正文">
+      <div class="sheet {{ focusClass }}">
+        <sc-if value="{{ isGeneral }}" hint-placeholder-val="{{ true }}">
+<div class="side-by-side">
+  <div class="group-stack left"><section class="group" aria-labelledby="appearance-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="appearance-heading">外观</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8m-4-4v4"></path></svg><span>主题</span></span>
+  <div class="row-controls"><div class="selector" onBlur="{{ dismissOnBlur }}" onKeyDown="{{ dismissOnEscape }}">
+  <button type="button" class="select" aria-label="选择主题" aria-expanded="{{ theme.open }}" title="选择主题" onClick="{{ theme.toggle }}">
+    <sc-if value="{{ theme.system.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8m-4-4v4"></path></svg><span>跟随系统</span>
+</sc-if>
+    <sc-if value="{{ theme.light.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path></svg><span>浅色模式</span>
+</sc-if>
+    <sc-if value="{{ theme.dark.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.985 12.486A9 9 0 1 1 11.514 3.015a.5.5 0 0 1 .462.765 6.5 6.5 0 0 0 8.244 8.244.5.5 0 0 1 .765.462"></path></svg><span>深色模式</span>
+</sc-if>
+    <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+  </button>
+  <sc-if value="{{ theme.open }}" hint-placeholder-val="{{ false }}">
+<div class="select-menu" role="group" aria-label="选择主题的选项">
+    <button class="option" type="button" aria-pressed="{{ theme.system.selected }}" onClick="{{ theme.system.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M8 21h8m-4-4v4"></path></svg><span>跟随系统</span><sc-if value="{{ theme.system.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+    <button class="option" type="button" aria-pressed="{{ theme.light.selected }}" onClick="{{ theme.light.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path></svg><span>浅色模式</span><sc-if value="{{ theme.light.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+    <button class="option" type="button" aria-pressed="{{ theme.dark.selected }}" onClick="{{ theme.dark.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.985 12.486A9 9 0 1 1 11.514 3.015a.5.5 0 0 1 .462.765 6.5 6.5 0 0 0 8.244 8.244.5.5 0 0 1 .765.462"></path></svg><span>深色模式</span><sc-if value="{{ theme.dark.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+  </div>
+</sc-if>
+</div></div>
+</div>
+<div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7Zm-10 10 10 5 10-5M2 17l10 5 10-5"></path></svg><span>磨砂半透明</span></span>
+  <div class="row-controls"><button class="switch" type="button" role="switch" aria-label="磨砂半透明" aria-checked="{{ frosted }}" onClick="{{ toggleFrosted }}" title="应用于侧栏、菜单和工具栏">
+  <span class="track" aria-hidden="true"><span class="knob"></span></span>
+</button></div>
+</div></div>
+</section><section class="group" aria-labelledby="account-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="account-heading">账户与助手</h2>
+  <div class="group-rows"><div class="row row-account">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71m2.25 5.82a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.71"></path></svg><span>ChatGPT 连接</span></span>
+  <div class="row-controls"><span class="status">未检查</span><span class="action-pair"><button type="button" class="action" aria-disabled="true" title="演示：检查连接">检查连接</button><button type="button" class="action" aria-disabled="true" title="演示：登录">登录</button></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a2.5 2.5 0 0 1-2.5 2.5H8l-5 4V5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5z"></path></svg><span>助手输入条</span></span>
+  <div class="row-controls"><button type="button" class="action" aria-disabled="true" title="演示：打开助手">打开助手</button></div>
+</div>
+<div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M9 16h6"></path></svg><span>三击空格</span></span>
+  <div class="row-controls"><button class="switch" type="button" role="switch" aria-label="全局三击空格" aria-checked="{{ hotkey }}" onClick="{{ toggleHotkey }}" title="连按三次空格打开助手输入条">
+  <span class="track" aria-hidden="true"><span class="knob"></span></span>
+</button></div>
+</div>
+<sc-if value="{{ hotkey }}" hint-placeholder-val="{{ true }}">
+<div class="row row-permission">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-3.5 7-10V5l-7-3-7 3v7c0 6.5 7 10 7 10Z"></path><path d="m9 12 2 2 4-4"></path></svg><span>输入监控</span></span>
+  <div class="row-controls"><span class="action-pair"><button type="button" class="action" aria-disabled="true" title="演示：检查权限">检查权限</button><button type="button" class="action" aria-disabled="true" title="演示：系统设置">系统设置</button></span></div>
+</div>
+</sc-if></div>
+</section></div>
+  <div class="group-stack right"><section class="group" aria-labelledby="funding-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="funding-heading">模型额度</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2 11 8l6 1.5-6 1.5-1.5 6L8 11l-6-1.5L8 8Zm9.5 12 1 3 3 1-3 1-1 3-1-3-3-1 3-1Z"></path></svg><span>生图额度</span></span>
+  <div class="row-controls"><div class="selector" onBlur="{{ dismissOnBlur }}" onKeyDown="{{ dismissOnEscape }}">
+  <button type="button" class="select" aria-label="生图额度来源" aria-expanded="{{ image.open }}" title="生图额度来源" onClick="{{ image.toggle }}">
+    <sc-if value="{{ image.chat.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a2.5 2.5 0 0 1-2.5 2.5H8l-5 4V5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5z"></path></svg><span>ChatGPT 订阅</span>
+</sc-if>
+    <sc-if value="{{ image.code.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 6-6 6 6 6m8-12 6 6-6 6"></path></svg><span>OpenAI API</span>
+</sc-if>
+    <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+  </button>
+  <sc-if value="{{ image.open }}" hint-placeholder-val="{{ false }}">
+<div class="select-menu" role="group" aria-label="生图额度来源的选项">
+    <button class="option" type="button" aria-pressed="{{ image.chat.selected }}" onClick="{{ image.chat.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a2.5 2.5 0 0 1-2.5 2.5H8l-5 4V5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5z"></path></svg><span>ChatGPT 订阅</span><sc-if value="{{ image.chat.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+    <button class="option" type="button" aria-pressed="{{ image.code.selected }}" onClick="{{ image.code.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 6-6 6 6 6m8-12 6 6-6 6"></path></svg><span>OpenAI API</span><sc-if value="{{ image.code.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+  </div>
+</sc-if>
+</div></div>
+</div>
+<div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6M8 13h8m-8 4h8"></path></svg><span>摘要额度</span></span>
+  <div class="row-controls"><div class="selector" onBlur="{{ dismissOnBlur }}" onKeyDown="{{ dismissOnEscape }}">
+  <button type="button" class="select" aria-label="摘要额度来源" aria-expanded="{{ summary.open }}" title="摘要额度来源" onClick="{{ summary.toggle }}">
+    <sc-if value="{{ summary.chat.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a2.5 2.5 0 0 1-2.5 2.5H8l-5 4V5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5z"></path></svg><span>ChatGPT 订阅</span>
+</sc-if>
+    <sc-if value="{{ summary.code.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 6-6 6 6 6m8-12 6 6-6 6"></path></svg><span>OpenAI API</span>
+</sc-if>
+    <svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+  </button>
+  <sc-if value="{{ summary.open }}" hint-placeholder-val="{{ false }}">
+<div class="select-menu" role="group" aria-label="摘要额度来源的选项">
+    <button class="option" type="button" aria-pressed="{{ summary.chat.selected }}" onClick="{{ summary.chat.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a2.5 2.5 0 0 1-2.5 2.5H8l-5 4V5.5A2.5 2.5 0 0 1 5.5 3h13A2.5 2.5 0 0 1 21 5.5z"></path></svg><span>ChatGPT 订阅</span><sc-if value="{{ summary.chat.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+    <button class="option" type="button" aria-pressed="{{ summary.code.selected }}" onClick="{{ summary.code.choose }}">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 6-6 6 6 6m8-12 6 6-6 6"></path></svg><span>OpenAI API</span><sc-if value="{{ summary.code.selected }}" hint-placeholder-val="{{ false }}">
+<svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+</sc-if>
+    </button>
+  </div>
+</sc-if>
+</div></div>
+</div>
+<div class="credential">
+  <div class="credential-title">
+    <label class="row-label" for="key-preview"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="5"></circle><path d="m12 11 8-8 2 2-3 3 2 2-2 2-2-2-3 3"></path></svg><span>OpenAI API Key</span></label>
+    <span class="status {{ keyTone }}">未配置</span>
+  </div>
+  <div class="key-form">
+    <input type="password" id="key-preview" readonly="readonly" placeholder="输入 API Key" title="密钥仅保存在本机系统凭据库">
+    <button type="button" class="action primary" disabled="disabled">验证并保存</button>
+  </div>
+  <div class="key-actions">
+    <button type="button" class="action" disabled="disabled">验证密钥</button>
+    <button type="button" class="action" disabled="disabled">移除密钥</button>
+  </div>
+</div></div>
+</section></div>
+</div>
+</sc-if>
+        <sc-if value="{{ isData }}" hint-placeholder-val="{{ false }}">
+<div class="side-by-side">
+  <div class="group-stack left"><section class="group" aria-labelledby="backup-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="backup-heading">备份与恢复</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg><span>完整备份</span></span>
+  <div class="row-controls"><button type="button" class="action" aria-disabled="true" title="包含画布、原图、历史记录和回收站">导出备份</button></div>
+</div>
+<div class="row row-import">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 17v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg><span>导入到当前资料库</span></span>
+  <div class="row-controls"><button type="button" class="action" aria-disabled="true" title="合并旧版画布或从备份目录导入">导入画布或备份</button></div>
+</div></div>
+</section></div>
+  <div class="group-stack right"><section class="group" aria-labelledby="app-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="app-heading">应用</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18m-12 0v11"></path></svg><span>版本</span></span>
+  <div class="row-controls"><span class="status app-version">Canvepp 0.6.9</span></div>
+</div></div>
+</section></div>
+</div>
+</sc-if>
+        <sc-if value="{{ isShortcuts }}" hint-placeholder-val="{{ false }}">
+<div class="side-by-side">
+  <div class="group-stack left"><section class="group" aria-labelledby="adobe-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="adobe-heading">Adobe 快照</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><span>导入当前 Photoshop / Illustrator 画布</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ ⌥ ⇧ 9</kbd></span></div>
+</div></div>
+</section><section class="group" aria-labelledby="gestures-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="gestures-heading">手势</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><span>缩放画布</span></span>
+  <div class="row-controls"><span class="status gesture">滚轮 / 双指捏合</span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>移动画布</span></span>
+  <div class="row-controls"><span class="status gesture">空格拖动 / 鼠标中键</span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>多选图片</span></span>
+  <div class="row-controls"><span class="status gesture">框选 / Shift 点击</span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>吸附图片面板</span></span>
+  <div class="row-controls"><span class="status gesture">拖动标题，靠边松开</span></div>
+</div></div>
+</section></div>
+  <div class="group-stack right"><section class="group" aria-labelledby="canvas-keys-heading" style="display:flex;flex-direction:column;gap:5px;">
+  <h2 class="group-title" id="canvas-keys-heading">画布操作</h2>
+  <div class="group-rows"><div class="row">
+  <span class="row-label"><span>新建图片</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ N</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>导入图片</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ O</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>复制 / 粘贴</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ C</kbd><span class="key-separator">/</span><kbd>⌘ V</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>撤销 / 重做</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ Z</kbd><span class="key-separator">/</span><kbd>⇧ ⌘ Z</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>全选图片</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ A</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>移入回收站</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌫</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>打开设置</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ ,</kbd></span></div>
+</div>
+<div class="row">
+  <span class="row-label"><span>助手输入条</span></span>
+  <div class="row-controls"><span class="keycaps"><kbd>⌘ ⇧ Space</kbd><span class="key-separator">/</span><kbd>三击空格</kbd></span></div>
+</div></div>
+</section></div>
+</div>
+</sc-if>
+      </div>
+    </div>
+  </div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":850,"height":704}}'>
+class Component extends DCLogic {
+  state = { tab: 'general', section: '', theme: 'light', image: 'chat', summary: 'code', frosted: true, hotkey: true, open: '' };
+
+  choosePage(tab, section = '') {
+    this.setState({ tab, section, open: '' });
+    if (this.pane) this.pane.scrollTop = 0;
+  }
+
+  selector(field, choiceKeys) {
+    const select = {
+      open: this.state.open === field,
+      toggle: () => this.setState({ open: this.state.open === field ? '' : field }),
+    };
+    for (const key of choiceKeys) {
+      select[key] = {
+        selected: this.state[field] === key,
+        choose: (event) => {
+          event.currentTarget.closest('.selector')?.querySelector('.select')?.focus();
+          this.setState({ [field]: key, open: '' });
+        },
+      };
+    }
+    return select;
+  }
+
+  renderVals() {
+    const { tab, section, theme, frosted, hotkey, image, summary } = this.state;
+    return {
+      isGeneral: tab === 'general',
+      isData: tab === 'data',
+      isShortcuts: tab === 'shortcuts',
+      isOverview: tab === 'general' && !section,
+      onGeneral: () => this.choosePage('general'),
+      onData: () => this.choosePage('data'),
+      onShortcuts: () => this.choosePage('shortcuts'),
+      onAppearance: () => this.choosePage('general', 'appearance'),
+      onAccount: () => this.choosePage('general', 'account'),
+      onFunding: () => this.choosePage('general', 'funding'),
+      appearanceSelected: section === 'appearance',
+      accountSelected: section === 'account',
+      fundingSelected: section === 'funding',
+      showAppearance: !section || section === 'appearance',
+      showAccount: !section || section === 'account',
+      showFunding: !section || section === 'funding',
+      focusClass: section ? 'focused' : '',
+      themeMode: theme,
+      theme: this.selector('theme', ['system', 'light', 'dark']),
+      image: this.selector('image', ['chat', 'code']),
+      summary: this.selector('summary', ['chat', 'code']),
+      keyTone: image === 'code' || summary === 'code' ? 'warning' : '',
+      frosted,
+      hotkey,
+      toggleFrosted: () => this.setState({ frosted: !frosted }),
+      toggleHotkey: () => this.setState({ hotkey: !hotkey }),
+      panelRef: (element) => { this.pane = element; },
+      dismissOnBlur: (event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) this.setState({ open: '' });
+      },
+      dismissOnEscape: (event) => {
+        if (event.key === 'Escape' && this.state.open) {
+          event.stopPropagation();
+          event.currentTarget.querySelector('.select')?.focus();
+          this.setState({ open: '' });
+        }
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

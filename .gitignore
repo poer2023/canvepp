@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.next-acceptance/
+.data/
+.env*
+!.env.example
+*.tsbuildinfo
+artifacts/
+.DS_Store
+.local-plugin-marketplace/

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>三击空格 · 助手输入条</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    .stage { color-scheme: light; --desk: #eeeeee; --paper: #fff; --ink: #222; --muted: #636363; --border: #dfdfdf; --hover: #eaeaea; --chip: #f6f6f6; --send: #272727; --send-ink: #fff; }
+    .stage[data-theme="dark"] { color-scheme: dark; --desk: #292929; --paper: #202020; --ink: #f3f3f3; --muted: #b4b4b4; --border: #424242; --hover: #353535; --chip: #292929; --send: #eee; --send-ink: #171717; }
+    @media (prefers-color-scheme: dark) {
+      .stage[data-theme="system"] { color-scheme: dark; --desk: #292929; --paper: #202020; --ink: #f3f3f3; --muted: #b4b4b4; --border: #424242; --hover: #353535; --chip: #292929; --send: #eee; --send-ink: #171717; }
+    }
+    .composer, .composer * { box-sizing: border-box; }
+    .composer { position:relative; overflow:hidden; isolation:isolate; font-family:Menlo,Consolas,"PingFang SC",monospace; }
+    .composer button { border: 0; color: inherit; background: transparent; border-radius: 6px; padding: 0; display: grid; place-items: center; width: 30px; height: 30px; cursor: pointer; }
+    .composer button:hover { background: var(--hover); }
+    .composer button:focus-visible { outline: 2px solid var(--muted); outline-offset: 1px; }
+    .composer .send { width: 34px; height: 30px; color: var(--send-ink); background: var(--send); }
+    .composer .send:hover { opacity: .83; }
+    .composer .chip-button { width: 24px; height: 24px; }
+    .composer header, .composer footer { display: flex; align-items: center; padding-inline: 16px; }
+    .composer header { height: 40px; gap: 3px; padding-top: 10px; }
+    .composer footer { height: 42px; gap: 6px; padding-bottom: 10px; }
+    .drag-title, .drag-space { cursor: grab; touch-action: none; user-select: none; align-self: stretch; }
+    .drag-title { display: flex; align-items: center; gap: 7px; }
+    .drag-space { flex: 1; }
+    .composer[data-dragging="true"], .composer[data-dragging="true"] .drag-title, .composer[data-dragging="true"] .drag-space { cursor: grabbing; }
+    .canvas-picker { position: relative; min-width: 0; color: var(--muted); }
+    .canvas-picker select { display: block; max-width: min(252px, 44vw); height: 30px; padding: 0 22px 0 6px; border: 0; border-radius: 5px; appearance: none; color: inherit; background: transparent; font: inherit; cursor: pointer; text-overflow: ellipsis; }
+    .canvas-picker select:hover { background: var(--hover); }
+    .canvas-picker select:focus-visible { outline: 2px solid var(--muted); outline-offset: 1px; }
+    .ascii-icon { margin:0; white-space:pre; color:inherit; font:600 5px/3.2px Menlo,Consolas,monospace; pointer-events:none; }
+    .canvas-picker .ascii-icon { position:absolute; top:50%; right:5px; translate:0 -50%; font-size:3.8px; line-height:2.4px; }
+    .composer textarea { resize:none; display:block; width:100%; min-height:50px; field-sizing:content; max-height:162px; border:0; outline:0; padding:8px 16px; background:transparent; color:var(--ink); font:15px/21px Menlo,Consolas,"PingFang SC",monospace; }
+    .ascii-surface { position:absolute; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; color:var(--send); }
+    .stage .reopen { height: 34px; padding: 0 12px; border: 0; border-radius: 6px; background: var(--send); color: var(--send-ink); font: inherit; cursor: pointer; }
+  </style>
+</helmet>
+<main class="stage" data-theme="{{ theme }}" aria-label="三击空格助手输入条" style="width:100%;height:100vh;display:grid;place-items:center;padding:24px;background:var(--desk);color:var(--ink);font:13px/1.4 -apple-system,BlinkMacSystemFont,'PingFang SC',system-ui,sans-serif;box-sizing:border-box">
+  <sc-if value="{{ shown }}" hint-placeholder-val="{{ true }}">
+  <section class="composer" aria-label="Canvepp 助手" data-dragging="{{ dragging }}" onKeyDown="{{ onKey }}" onPointerMove="{{ moveDrag }}" onLostPointerCapture="{{ endDrag }}" style="{{ composerStyle }}">
+    <canvas class="ascii-surface" aria-hidden="true" ref="{{ observeSurface }}"></canvas>
+    <header>
+      <div class="drag-title" onPointerDown="{{ startDrag }}">
+        <span style="font-weight:620">Codex</span>
+        <span style="color:var(--muted)" aria-hidden="true">/</span>
+      </div>
+      <div class="canvas-picker">
+        <select aria-label="选择画布" value="{{ canvas }}" onChange="{{ chooseCanvas }}">
+          <option value="spring">春季影像研究</option>
+          <option value="poster">海报构图</option>
+          <option value="blank">未命名画布</option>
+        </select>
+        <pre class="ascii-icon" aria-hidden="true">{{ icons.chevron }}</pre>
+      </div>
+      <span class="drag-space" onPointerDown="{{ startDrag }}" aria-hidden="true"></span>
+      <button type="button" aria-label="关闭助手" title="关闭助手 · Esc" onClick="{{ close }}"><pre class="ascii-icon" aria-hidden="true">{{ icons.close }}</pre></button>
+    </header>
+    <textarea rows="2" aria-label="助手输入" ref="{{ focusInput }}" value="{{ draft }}" onChange="{{ editDraft }}"></textarea>
+    <sc-if value="{{ attached }}" hint-placeholder-val="{{ true }}">
+      <div style="width:min(285px,calc(100% - 32px));height:28px;display:flex;gap:7px;align-items:center;margin:0 16px 4px;padding:0 4px 0 7px;background:var(--chip);border-radius:6px">
+        <pre class="ascii-icon" aria-hidden="true">{{ icons.file }}</pre><span style="flex:1;color:var(--muted);font-size:12px">构图参考.pdf</span>
+        <button type="button" class="chip-button" aria-label="移除构图参考.pdf" onClick="{{ toggleAttachment }}"><pre class="ascii-icon" aria-hidden="true">{{ icons.close }}</pre></button>
+      </div>
+    </sc-if>
+    <footer>
+      <button type="button" aria-label="添加图片或文件" title="添加图片或文件" onClick="{{ toggleAttachment }}"><pre class="ascii-icon" aria-hidden="true">{{ icons.attach }}</pre></button>
+      <span class="drag-space" onPointerDown="{{ startDrag }}" aria-hidden="true"></span>
+      <button type="button" aria-label="在 Codex 中查看会话" title="在 Codex 中查看会话" aria-disabled="true"><pre class="ascii-icon" aria-hidden="true">{{ icons.external }}</pre></button>
+      <button class="send" type="button" aria-label="发送给 Codex" title="回车发送，Shift + 回车换行" aria-disabled="true"><pre class="ascii-icon" aria-hidden="true">{{ icons.send }}</pre></button>
+    </footer>
+  </section>
+  </sc-if>
+  <sc-if value="{{ hidden }}" hint-placeholder-val="{{ false }}">
+    <button type="button" class="reopen" onClick="{{ open }}">打开助手</button>
+  </sc-if>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["system","light","dark"],"default":"system"},"$preview":{"width":850,"height":314}}'>
+class Component extends DCLogic {
+  state = { attached:true, shown:true, draft:"帮我从这组图里挑一张当封面。\n再总结一下画面的光线特点。", canvas:"spring", x:0, y:0, dragging:false };
+  focusInput = (input) => {
+    if (!input) return;
+    input.ownerDocument.defaultView.requestAnimationFrame(() => {
+      if (input.isConnected) input.focus({ preventScroll:true });
+    });
+  };
+  observeSurface = (canvas) => {
+    this.stopSurface?.();
+    if (!canvas) return;
+    const panel=canvas.parentElement, doc=canvas.ownerDocument, w=doc.defaultView;
+    const ctx=canvas.getContext("2d");
+    if (!ctx) return;
+    const reduce=w.matchMedia("(prefers-reduced-motion: reduce)");
+    const system=w.matchMedia("(prefers-color-scheme: dark)");
+    const glyphs=["--","/-","-\\","|","/","\\"];
+    const start=Date.now();
+    let timer, width=0, height=0, profile=[];
+    const paint = () => {
+      ctx.clearRect(0,0,width,height);
+      if (!profile.length) return;
+      const now=Date.now(), active=!reduce.matches && !doc.hidden && panel.contains(doc.activeElement);
+      let outside=.34, inside=.48;
+      if (active) {
+        const t=now-start, phase=(t%4600)/4600*Math.PI*2;
+        let strength=Math.min(1,.26+t/420);
+        const left=Math.max(0,1-(now-(this.editedAt??0))/440);
+        strength+=.45*left*left;
+        outside=Math.cos(phase)*strength;
+        inside=Math.cos(phase+.38)*strength;
+      }
+      const put=(i,x,y,alpha)=>{ ctx.globalAlpha=alpha; ctx.fillText(glyphs[i],x,y); };
+      const top=10, bottom=height-10, middle=Math.min(23,height*.14)*inside;
+      const rows=[[top,6*outside,.50],[height*.32,middle,.24],[height*.68,-middle,.21],[bottom,-6*outside,.50]];
+      const last=profile.length-1;
+      rows.forEach(([y,bend,alpha],line)=>{
+        for (let i=0;i<=last;i++) {
+          const u=i/last, delta=(profile[Math.min(last,i+1)]-profile[Math.max(0,i-1)])*bend;
+          const glyph=delta< -2.2 ? 1 : delta>2.2 ? 2 : 0;
+          put(glyph,14+(width-28)*u,y+profile[i]*bend,alpha*((line===1||line===2) ? .35+.65*u : 1));
+        }
+      });
+      put(4,8,top+5,.50); put(5,width-8,top+5,.50);
+      put(5,8,bottom-5,.50); put(4,width-8,bottom-5,.50);
+      for (let y=top+15;y<bottom-11;y+=11) { put(3,6,y,.45); put(3,width-6,y,.45); }
+      if (active) timer=w.setTimeout(paint,1000/12);
+    };
+    const refresh=()=>{
+      w.clearTimeout(timer);
+      const nextWidth=canvas.clientWidth, nextHeight=canvas.clientHeight;
+      if (width!==nextWidth || height!==nextHeight) {
+        width=nextWidth; height=nextHeight;
+        const dpr=Math.min(2,w.devicePixelRatio||1);
+        canvas.width=Math.max(1,Math.round(width*dpr));
+        canvas.height=Math.max(1,Math.round(height*dpr));
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        ctx.font="8px Menlo, Consolas, monospace";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        const count=Math.max(2,1+Math.floor((width-28)/ctx.measureText("--").width));
+        profile=Array.from({length:count},(_,i)=>{
+          const u=i/(count-1);
+          return Math.sin(Math.PI*u)*(Math.sin(2*Math.PI*u)+.25*Math.sin(4*Math.PI*u));
+        });
+      }
+      ctx.fillStyle=w.getComputedStyle(canvas).color;
+      paint();
+    };
+    const resize=new w.ResizeObserver(refresh);
+    resize.observe(canvas);
+    const theme=new w.MutationObserver(refresh);
+    theme.observe(panel.closest(".stage"),{attributes:true,attributeFilter:["data-theme"]});
+    panel.addEventListener("focusin",refresh);
+    panel.addEventListener("focusout",refresh);
+    doc.addEventListener("visibilitychange",refresh);
+    reduce.addEventListener("change",refresh);
+    system.addEventListener("change",refresh);
+    this.stopSurface=()=>{
+      w.clearTimeout(timer);
+      resize.disconnect(); theme.disconnect();
+      panel.removeEventListener("focusin",refresh);
+      panel.removeEventListener("focusout",refresh);
+      doc.removeEventListener("visibilitychange",refresh);
+      reduce.removeEventListener("change",refresh);
+      system.removeEventListener("change",refresh);
+    };
+    refresh();
+  };
+  componentWillUnmount() { this.stopSurface?.(); }
+  renderVals() {
+    const { x, y } = this.state;
+    const close = () => {
+      this.editedAt=0;
+      this.drag = null;
+      this.setState({ shown:false, dragging:false });
+    };
+    return {
+      theme: this.props.theme ?? "system",
+      attached: this.state.attached,
+      shown: this.state.shown,
+      hidden: !this.state.shown,
+      draft: this.state.draft,
+      focusInput: this.focusInput,
+      observeSurface: this.observeSurface,
+      icons: {"attach": "  /-\\\n / /|\n| / /\n|/ / \n \\-  ", "chevron": "\\   /\n \\ / \n  v  ", "close": "\\   /\n \\ / \n  x  \n / \\ \n/   \\", "external": "  --+\n   /|\n+-/  \n|    \n+---+", "file": "+--\\ \n| . |\n| --|\n|   |\n+---+", "send": "  ^  \n /|\\ \n/ | \\\n  |  \n  |  "},
+      canvas: this.state.canvas,
+      chooseCanvas: (event) => this.setState({ canvas: event.target.value }),
+      dragging: this.state.dragging,
+      composerStyle: { width:"min(640px,100%)", display:"flex", flexDirection:"column", border:"1px solid var(--border)", borderRadius:"15px", background:"var(--paper)", transform:`translate(${x}px, ${y}px)` },
+      startDrag: (event) => {
+        if (event.button !== 0) return;
+        this.drag = { id:event.pointerId, x:event.clientX-x, y:event.clientY-y };
+        event.currentTarget.setPointerCapture(event.pointerId);
+        this.setState({ dragging:true });
+      },
+      moveDrag: (event) => {
+        if (this.drag?.id !== event.pointerId) return;
+        const panel = event.currentTarget.getBoundingClientRect();
+        const stage = event.currentTarget.parentElement.getBoundingClientRect();
+        const dx = Math.max(0, (stage.width-panel.width)/2-8);
+        const dy = Math.max(0, (stage.height-panel.height)/2-8);
+        this.setState({
+          x: Math.max(-dx, Math.min(dx, event.clientX-this.drag.x)),
+          y: Math.max(-dy, Math.min(dy, event.clientY-this.drag.y)),
+        });
+      },
+      endDrag: () => {
+        this.drag = null;
+        this.setState({ dragging:false });
+      },
+      editDraft: (event) => {
+        this.editedAt=Date.now();
+        this.setState({ draft:event.target.value });
+      },
+      open: () => this.setState({ shown:true }),
+      close,
+      onKey: (event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          close();
+        }
+      },
+      toggleAttachment: () => this.setState({ attached: !this.state.attached }),
+    };
+  }
+}
+</script>
+</body>
+</html>

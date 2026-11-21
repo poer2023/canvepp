@@ -1,0 +1,113 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-20T11:53:23.989Z"
+  },
+  "title": "Canvepp App Logo",
+  "launch": {
+    "view": "canvas",
+    "page": "round-2"
+  },
+  "pages": [
+    {
+      "id": "round-1",
+      "name": "第一轮"
+    },
+    {
+      "id": "round-2",
+      "name": "第二轮"
+    }
+  ],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 416,
+      "h": 480,
+      "title": "01 · 画布坐标"
+    },
+    "Stack.dc.html": {
+      "x": 496,
+      "y": 0,
+      "w": 416,
+      "h": 480,
+      "title": "02 · 叠片"
+    },
+    "Links.dc.html": {
+      "x": 992,
+      "y": 0,
+      "w": 416,
+      "h": 480,
+      "title": "03 · 连结"
+    },
+    "Window.dc.html": {
+      "x": 0,
+      "y": 600,
+      "w": 416,
+      "h": 480,
+      "title": "04 · 取景"
+    },
+    "Fold.dc.html": {
+      "x": 496,
+      "y": 600,
+      "w": 416,
+      "h": 480,
+      "title": "05 · 折角 C"
+    },
+    "Round2Ligature.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 416,
+      "h": 476,
+      "title": "01 · 交笔 CV",
+      "page": "round-2"
+    },
+    "Round2Cutout.dc.html": {
+      "x": 496,
+      "y": 0,
+      "w": 416,
+      "h": 476,
+      "title": "02 · 留角",
+      "page": "round-2"
+    },
+    "Round2Oblique.dc.html": {
+      "x": 992,
+      "y": 0,
+      "w": 416,
+      "h": 476,
+      "title": "03 · 斜门",
+      "page": "round-2"
+    },
+    "Round2Orbit.dc.html": {
+      "x": 0,
+      "y": 596,
+      "w": 416,
+      "h": 476,
+      "title": "04 · 旋片",
+      "page": "round-2"
+    },
+    "Round2Spread.dc.html": {
+      "x": 496,
+      "y": 596,
+      "w": 416,
+      "h": 476,
+      "title": "05 · 展开",
+      "page": "round-2"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Stack.dc.html",
+    "Links.dc.html",
+    "Window.dc.html",
+    "Fold.dc.html",
+    "Round2Ligature.dc.html",
+    "Round2Cutout.dc.html",
+    "Round2Oblique.dc.html",
+    "Round2Orbit.dc.html",
+    "Round2Spread.dc.html"
+  ],
+  "notes": {},
+  "designSystems": []
+}

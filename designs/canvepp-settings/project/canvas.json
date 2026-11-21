@@ -1,0 +1,68 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-18T17:37:42.510Z"
+  },
+  "title": "Canvepp 设置 · 三版对照",
+  "launch": {
+    "view": "canvas",
+    "page": "options"
+  },
+  "pages": [
+    {
+      "id": "options",
+      "name": "三版对照"
+    },
+    {
+      "id": "assistant",
+      "name": "助手输入条"
+    }
+  ],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 850,
+      "h": 704,
+      "title": "A · 纵向清单",
+      "page": "options",
+      "is_interactive": true
+    },
+    "Columns.dc.html": {
+      "x": 930,
+      "y": 0,
+      "w": 850,
+      "h": 704,
+      "title": "B · 并行双栏",
+      "page": "options",
+      "is_interactive": true
+    },
+    "Groups.dc.html": {
+      "x": 1860,
+      "y": 0,
+      "w": 850,
+      "h": 704,
+      "title": "C · 分组直达",
+      "page": "options",
+      "is_interactive": true
+    },
+    "Assistant.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 850,
+      "h": 314,
+      "title": "三击空格 · 助手输入条",
+      "page": "assistant",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Columns.dc.html",
+    "Groups.dc.html",
+    "Assistant.dc.html"
+  ],
+  "notes": {},
+  "designSystems": []
+}

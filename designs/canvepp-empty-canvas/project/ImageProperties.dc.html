@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>B · 参数清单</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; }
+    .media-stage, .media-stage * { box-sizing: border-box; }
+    .media-stage {
+      --canvas: #fff; --grid: #dadada; --panel: #fff; --control: #f6f6f6;
+      --hover: #eaeaea; --selected: #e7e7e7; --rule: #e9e9e9; --edge: #dcdcdc;
+      --text: #222; --muted: #636363; --solid: #272727; --reverse: #fff;
+      --disabled: #777; --danger: #941d1d; --focus: #606060;
+      color: var(--text); color-scheme: light; position: relative; display: grid;
+      place-items: center; overflow: hidden; margin: 0;
+      background: radial-gradient(var(--grid) .65px, transparent .85px) 10px 10px / 22px 22px var(--canvas);
+      font: 13px/1.45 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .media-stage[data-theme="dark"] {
+      --canvas: #202020; --grid: #484848; --panel: #292929; --control: #222;
+      --hover: #383838; --selected: #3d3d3d; --rule: #3c3c3c; --edge: #484848;
+      --text: #f3f3f3; --muted: #b4b4b4; --solid: #eee; --reverse: #171717;
+      --disabled: #a3a3a3; --danger: #ffb9b9; --focus: #b4b4b4;
+      color-scheme: dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      .media-stage[data-theme="system"] {
+        --canvas: #202020; --grid: #484848; --panel: #292929; --control: #222;
+        --hover: #383838; --selected: #3d3d3d; --rule: #3c3c3c; --edge: #484848;
+        --text: #f3f3f3; --muted: #b4b4b4; --solid: #eee; --reverse: #171717;
+        --disabled: #a3a3a3; --danger: #ffb9b9; --focus: #b4b4b4;
+        color-scheme: dark;
+      }
+    }
+    .media-stage :is(button,input,textarea) { font: inherit; color: inherit; }
+    .media-stage button {
+      border: 0; margin: 0; padding: 0; border-radius: 6px; background: transparent;
+      cursor: pointer; white-space: nowrap; line-height: 1.2;
+    }
+    .media-stage button:disabled { color: var(--disabled); cursor: default; }
+    .media-stage :is(button,input,textarea):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    .media-stage :is(button,textarea,input) { touch-action: manipulation; }
+    .media-stage :is(.tool,.pill,.count-option,.preset,.tab,.menu-item,.ratio-card):hover:not(:disabled) {
+      background: var(--hover); color: var(--text);
+    }
+    .media-stage svg { flex: none; display: block; }
+    .floating-panel {
+      position: relative; width: 320px; border: 1px solid var(--edge); border-radius: 13px;
+      background: var(--panel); transform: translate(var(--drag-x, 0px), var(--drag-y, 0px));
+    }
+    .floating-panel.wide { width: 496px; }
+    .chrome { min-height: 46px; padding: 4px 8px 4px 12px; }
+    .panel-title { color: var(--text); font-size: 13px; font-weight: 650; }
+    .drag-title {
+      cursor: grab; touch-action: none; user-select: none; flex: 1; align-self: stretch;
+    }
+    .drag-title:active { cursor: grabbing; }
+    .drag-title svg { color: var(--muted); }
+    .media-stage .tool {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; color: var(--muted); flex: none;
+    }
+    .media-stage .pill {
+      display: inline-flex; justify-content: center; align-items: center; gap: 6px;
+      min-height: 30px; padding: 0 8px; color: var(--muted); font-size: 12px;
+    }
+    .pill svg { width: 14px; height: 14px; }
+    .media-stage .primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      min-height: 32px; padding: 0 12px; border-radius: 7px;
+      background: var(--solid); color: var(--reverse); font-weight: 620; font-size: 12px;
+    }
+    .media-stage .primary:hover:not(:disabled) { opacity: .86; }
+    .media-stage .primary:disabled { background: var(--selected); color: var(--disabled); }
+    .composer-frame { border: 1px solid var(--edge); border-radius: 10px; background: var(--panel); }
+    .composer {
+      padding: 10px 11px; margin: 0; background: var(--control); border: 0; border-radius: 8px;
+      width: 100%; resize: none; display: block; line-height: 1.6; min-width: 0;
+    }
+    .composer::placeholder { color: var(--muted); }
+    .composer:focus-visible { outline-offset: -2px !important; }
+    .composer-frame .composer { background: transparent; }
+    .composer-bar {
+      min-height: 43px; padding: 5px; border-top: 1px solid var(--rule);
+      display: flex; align-items: center; gap: 2px;
+    }
+    .composer-bar .pill:first-child { margin-right: auto; }
+    .composer-bar .primary { padding-inline: 9px; }
+    .composer-bar .compact-dims { color: var(--text); }
+    .numeric { font-variant-numeric: tabular-nums; }
+    .size-row {
+      min-height: 37px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .field-label { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .pixel-field {
+      min-width: 0; height: 30px; padding: 0 7px; display: flex; align-items: center; flex: 1;
+      gap: 4px; border-radius: 6px; background: var(--control);
+    }
+    .pixel-field:focus-within { outline: 1px solid var(--focus); }
+    .pixel-field input {
+      flex: 1; width: 0; padding: 0; border: 0; background: transparent;
+      outline: none !important; font-size: 12px; font-variant-numeric: tabular-nums;
+    }
+    .pixel-field input[aria-invalid="true"] { color: var(--danger); }
+    .unit { color: var(--muted); font-size: 11px; }
+    .pixel-group { display: flex; align-items: center; gap: 5px; min-width: 0; }
+    .segments { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 2px; border-radius: 7px; background: var(--control); }
+    .media-stage .count-option { min-width: 25px; min-height: 25px; padding-inline: 5px; color: var(--muted); font-size: 12px; }
+    .media-stage :is(.count-option,.preset)[aria-pressed="true"] { background: var(--selected); color: var(--text); font-weight: 660; }
+    .ratio-grid {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px;
+    }
+    .media-stage .preset {
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      min-height: 29px; padding: 0 3px; color: var(--muted); font-size: 11px; background: var(--control);
+    }
+    .media-stage .free { grid-column: 1 / -1; justify-content: center; }
+    .shape-box { width: 14px; height: 14px; display: inline-grid; place-items: center; flex: none; }
+    .shape-box span { display: block; border: 1px solid currentColor; border-radius: 1px; }
+    .media-stage .ratio-card {
+      min-width: 0; height: 53px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      gap: 5px; border: 1px solid var(--edge); border-radius: 7px; color: var(--muted); font-size: 11px;
+    }
+    .media-stage .ratio-card[aria-pressed="true"] {
+      color: var(--text); background: var(--control); border-color: var(--text); font-weight: 650;
+    }
+    .ratio-card .shape-box { width: 26px; height: 21px; }
+    .popover {
+      position: absolute; z-index: 3; inset-inline: 12px; bottom: 45px;
+      border: 1px solid var(--edge); border-radius: 9px; padding: 9px;
+      display: flex; flex-direction: column; gap: 8px; background: var(--panel);
+    }
+    .popover.settings-menu { left: auto; width: 147px; top: 40px; bottom: auto; }
+    .popover.quantity-menu { left: auto; right: 72px; width: 145px; bottom: 42px; }
+    .popover.ratio-menu-wide { left: auto; width: 252px; bottom: 92px; }
+    .popover.ratio-menu-rows { bottom: 55px; }
+    .media-stage .menu-item {
+      min-height: 33px; display: flex; align-items: center; justify-content: flex-start; gap: 8px;
+      padding-inline: 7px; font-size: 12px;
+    }
+    .popover .tool { width: 25px; height: 25px; }
+    .preset-label { font-size: 12px; font-weight: 610; }
+    .stepper { display: flex; align-items: center; justify-content: space-between; background: var(--control); border-radius: 6px; }
+    .stepper output { min-width: 33px; text-align: center; font-size: 12px; }
+    .stepper .tool { height: 28px; width: 27px; }
+    .tabbar { display: flex; align-items: center; gap: 17px; border-bottom: 1px solid var(--edge); }
+    .media-stage .tab { height: 34px; padding-inline: 2px; color: var(--muted); border-radius: 0; font-size: 12px; border-bottom: 2px solid transparent; }
+    .media-stage .tab[aria-selected="true"] { color: var(--text); font-weight: 650; border-bottom-color: var(--text); }
+    .receipt, .input-warning { margin: 0; padding: 0 12px 10px; color: var(--muted); font-size: 11px; }
+    .input-warning { color: var(--danger); }
+    .panel-confirm { border-top: 1px solid var(--rule); padding: 9px 12px; }
+    .media-stage .danger { color: var(--danger); }
+    .selection-proxy {
+      position: absolute; top: 45px; left: 50%; transform: translateX(-50%); width: 104px; height: 74px;
+      display: grid; place-items: center; border: 1px solid var(--focus); color: var(--muted); background: var(--control);
+    }
+    .selection-proxy i { position: absolute; width: 5px; height: 5px; background: var(--panel); border: 1px solid var(--focus); }
+    .selection-proxy i:nth-child(1) { top: -3px; left: -3px; }
+    .selection-proxy i:nth-child(2) { top: -3px; right: -3px; }
+    .selection-proxy i:nth-child(3) { bottom: -3px; left: -3px; }
+    .selection-proxy i:nth-child(4) { bottom: -3px; right: -3px; }
+  </style>
+</helmet>
+<div class="media-stage" style="width:384px;height:448px;" data-theme="{{appearance}}" onKeyDown="{{onStageKey}}">
+  
+  <sc-if value="{{visible}}" hint-placeholder-val="{{true}}">
+<section class="floating-panel" style="--drag-x:{{x}}px;--drag-y:{{y}}px;" aria-label="图片创作面板">
+    <header class="chrome" style="display:flex;align-items:center;gap:1px;">
+  <div class="drag-title" style="display:flex;align-items:center;gap:7px;" onPointerDown="{{pointerStart}}" onPointerMove="{{pointerMove}}" onPointerUp="{{pointerEnd}}" onPointerCancel="{{pointerEnd}}" onLostPointerCapture="{{pointerEnd}}" title="拖动图片设置">
+    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg><span class="panel-title">创作图片</span>
+  </div>
+  
+  <button class="tool" type="button" title="{{collapseLabel}}" aria-label="{{collapseLabel}}" aria-expanded="{{expanded}}" onClick="{{collapse}}">
+    <sc-if value="{{expanded}}" hint-placeholder-val="{{true}}">
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
+</sc-if><sc-if value="{{collapsed}}" hint-placeholder-val="{{false}}">
+<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7v14"/></svg>
+</sc-if>
+  </button>
+  <button class="tool" type="button" title="关闭图片设置" aria-label="关闭图片设置" onClick="{{close}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button>
+</header>
+    <sc-if value="{{expanded}}" hint-placeholder-val="{{true}}">
+<section style="display:flex;flex-direction:column;gap:9px;padding:0 13px 12px;">
+  <div style="display:flex;flex-direction:column;gap:5px;">
+    <span class="field-label">提示词</span>
+    <textarea class="composer" aria-label="提示词" placeholder="写下你的提示词…" style="height:83px" value="{{prompt}}" onChange="{{editPrompt}}" spellcheck="false"></textarea>
+  </div>
+  <div style="display:flex;flex-direction:column;">
+    <div class="size-row">
+      <span class="field-label">比例</span>
+      <button class="pill numeric" type="button" style="" title="选择画幅与目标尺寸" aria-label="选择画幅" aria-expanded="{{ratioMenu}}" onClick="{{showRatios}}"><span>{{ratioName}}</span><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+    </div>
+    <div class="size-row">
+      <span class="field-label">目标像素</span>
+      <div class="pixel-group" style="width:205px"><label class="pixel-field">
+  <span class="unit">宽</span>
+  <input inputmode="numeric" type="text" autocomplete="off" aria-label="宽度像素" value="{{widthText}}" aria-invalid="{{invalidWidth}}" onChange="{{editWidth}}" onBlur="{{normalizeWidth}}" onKeyDown="{{commitPixel}}">
+  
+</label>
+  <span class="unit" aria-hidden="true">×</span>
+  <label class="pixel-field">
+  <span class="unit">高</span>
+  <input inputmode="numeric" type="text" autocomplete="off" aria-label="高度像素" value="{{heightText}}" aria-invalid="{{invalidHeight}}" onChange="{{editHeight}}" onBlur="{{normalizeHeight}}" onKeyDown="{{commitPixel}}">
+  
+</label>
+  <span class="unit" aria-hidden="true">px</span>
+</div>
+    </div>
+    <div class="size-row" style="border-bottom:0;">
+      <span class="field-label">张数</span>
+      <div class="segments numeric" aria-label="生成张数" role="group" style="width:141px;">
+  <sc-for list="{{counts}}" as="item" hint-placeholder-count="4">
+    <button class="count-option" type="button" aria-label="{{item.name}}" aria-pressed="{{item.selected}}" onClick="{{item.pick}}">{{item.n}}</button>
+  </sc-for>
+</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--rule);padding-top:9px;">
+<button class="tool" type="button" title="移入回收站" aria-label="移入回收站" onClick="{{confirmTrash}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18m-2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6m3 0V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m-6 4v7m4-7v7"/></svg></button><button class="primary" type="button" aria-label="{{generateLabel}}" onClick="{{generate}}" disabled="{{disableGenerate}}"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.9 3.9 11.3 9l5.1 1.4-5.1 1.5L9.9 17l-1.5-5.1-5.1-1.5L8.4 9l1.5-5.1ZM18.6 3v5m-2.5-2.5h5m-3.4 9.2V21m-3.15-3.15h6.3"/></svg><span>生成 {{countLabel}}</span></button>
+</div>
+</section>
+<sc-if value="{{ratioMenu}}" hint-placeholder-val="{{false}}">
+<div class="popover ratio-menu-rows" role="group" aria-label="选择画幅">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+<span class="preset-label">画幅</span><button class="tool" type="button" title="关闭画幅选择" aria-label="关闭画幅选择" onClick="{{dismissMenu}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button>
+</div>
+  <div class="ratio-grid" role="group" aria-label="画幅比例">
+  <sc-for list="{{options}}" as="item" hint-placeholder-count="8">
+    <button class="preset numeric" type="button" aria-label="{{item.label}}" aria-pressed="{{item.selected}}" onClick="{{item.choose}}"><span class="shape-box" aria-hidden="true"><span style="{{item.glyph}}"></span></span><span>{{item.label}}</span></button>
+  </sc-for>
+  <button class="preset free" type="button" aria-pressed="{{isFree}}" onClick="{{pickFree}}"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v13a2 2 0 0 0 2 2h13M3 6h13a2 2 0 0 1 2 2v13"/></svg><span>自由像素</span></button>
+</div>
+  
+</div>
+</sc-if>
+    <sc-if value="{{invalid}}" hint-placeholder-val="{{false}}">
+<p class="input-warning" role="alert">目标尺寸需为 64–8192 px 的整数。</p>
+</sc-if>
+<sc-if value="{{hasStatus}}" hint-placeholder-val="{{false}}">
+<p class="receipt numeric" role="status">{{status}}</p>
+</sc-if>
+</sc-if>
+    
+    <sc-if value="{{confirming}}" hint-placeholder-val="{{false}}">
+<div class="panel-confirm" role="group" aria-label="回收站确认">
+  <p style="margin:0 0 7px;font-size:12px;">将图片移入回收站？</p>
+  <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end;">
+<button class="pill" type="button" onClick="{{cancelTrash}}">取消</button><button class="pill danger" type="button" onClick="{{moveToTrash}}">移入回收站</button>
+</div>
+</div>
+</sc-if>
+  </section>
+</sc-if>
+  <sc-if value="{{closed}}" hint-placeholder-val="{{false}}">
+<button class="primary" type="button" onClick="{{reopen}}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><span>打开图片设置</span></button>
+</sc-if>
+  <sc-if value="{{trashed}}" hint-placeholder-val="{{false}}">
+<div style="display:flex;align-items:center;gap:6px;">
+<span role="status" class="field-label">已移入回收站</span><button class="pill" type="button" onClick="{{reopen}}"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6m-6 0 4.5-4.5a7.5 7.5 0 0 1 12.6 4.2 7.5 7.5 0 0 1-7.6 8.3"/></svg><span>撤销</span></button>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"appearance":{"editor":"enum","options":["system","light","dark"],"default":"system"},"$preview":{"width":384,"height":448}}'>
+const ratios = [
+  { label: "1:1", w: 1, h: 1 },
+  { label: "4:3", w: 4, h: 3 },
+  { label: "3:4", w: 3, h: 4 },
+  { label: "3:2", w: 3, h: 2 },
+  { label: "2:3", w: 2, h: 3 },
+  { label: "16:9", w: 16, h: 9 },
+  { label: "9:16", w: 9, h: 16 },
+  { label: "21:9", w: 21, h: 9 }
+];
+
+function clamp(value, lo, hi) {
+  return Math.min(Math.max(value, lo), hi);
+}
+
+function validPixels(text) {
+  return /^\d+$/.test(text) && Number(text) >= 64 && Number(text) <= 8192;
+}
+
+class Component extends DCLogic {
+  state = {
+    prompt: "雨后的街角，暖色路灯映在石板路上。右侧留给海报标题。",
+    ratio: 0, width: 1024, height: 1024, widthText: "1024", heightText: "1024",
+    count: 1, menu: "", tab: "prompt", status: "",
+    collapsed: false, visible: true, trashed: false, confirming: false, x: 0, y: 0
+  };
+
+  dimensions(index, axis, value) {
+    const pair = { width: this.state.width, height: this.state.height };
+    if (index === -1) {
+      pair[axis] = value;
+      return pair;
+    }
+    const ratio = ratios[index];
+    const factor = axis === "width" ? ratio.h / ratio.w : ratio.w / ratio.h;
+    const primary = clamp(value, Math.max(64, Math.ceil(64 / factor)), Math.min(8192, Math.floor(8192 / factor)));
+    pair[axis] = primary;
+    pair[axis === "width" ? "height" : "width"] = Math.round(primary * factor);
+    return pair;
+  }
+
+  pickRatio(index) {
+    const { width, height } = this.dimensions(index, "width", this.state.width);
+    this.setState({ ratio: index, width, height, widthText: String(width), heightText: String(height), menu: "", status: "" });
+  }
+
+  editPixels(axis, raw) {
+    if (!validPixels(raw)) {
+      this.setState({ [axis + "Text"]: raw, status: "" });
+      return;
+    }
+    const { width, height } = this.dimensions(this.state.ratio, axis, Number(raw));
+    this.setState({
+      width, height, widthText: axis === "width" ? raw : String(width),
+      heightText: axis === "height" ? raw : String(height), status: ""
+    });
+  }
+
+  setCount(count) {
+    this.setState({ count: clamp(count, 1, 4), menu: "", status: "" });
+  }
+
+  beginDrag(e) {
+    if (e.button !== 0) return;
+    const frame = e.currentTarget.closest(".media-stage");
+    const stage = frame.getBoundingClientRect();
+    const panel = e.currentTarget.closest(".floating-panel").getBoundingClientRect();
+    const scale = stage.width / frame.offsetWidth || 1;
+    this.drag = {
+      px: e.clientX, py: e.clientY, x: this.state.x, y: this.state.y, scale,
+      left: (stage.left + 5 - panel.left) / scale, right: (stage.right - 5 - panel.right) / scale,
+      top: (stage.top + 5 - panel.top) / scale, bottom: (stage.bottom - 5 - panel.bottom) / scale
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    this.setState({ menu: "" });
+  }
+
+  moveDrag(e) {
+    if (!this.drag) return;
+    const { px, py, x, y, scale, left, right, top, bottom } = this.drag;
+    this.setState({
+      x: x + clamp((e.clientX - px) / scale, left, right),
+      y: y + clamp((e.clientY - py) / scale, top, bottom)
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const ratio = ratios[s.ratio];
+    const isValid = validPixels(s.widthText) && validPixels(s.heightText);
+    const canGenerate = isValid && s.prompt.trim() !== "";
+    const size = s.width + " × " + s.height;
+    const countLabel = s.count + " 张";
+    const select = (index) => () => this.pickRatio(index);
+    const options = ratios.map((r, index) => {
+      const icon = (unit) => "width:" + (r.w * unit / Math.max(r.w, r.h)) + "px;height:" + (r.h * unit / Math.max(r.w, r.h)) + "px";
+      return { label: r.label, selected: index === s.ratio, choose: select(index), glyph: icon(12), thumbnail: icon(21) };
+    });
+    const toggle = (name) => () => this.setState({ menu: s.menu === name ? "" : name, confirming: false });
+    const commitPixel = (e) => {
+      if (e.key === "Enter") e.currentTarget.blur();
+    };
+    return {
+      appearance: this.props.appearance ?? "system", ...s,
+      expanded: !s.collapsed, closed: !s.visible && !s.trashed,
+      ratioName: ratio ? ratio.label : "自由", size, countLabel, isFree: !ratio, options,
+      gallery: [0, 1, 2, 5].map((index) => options[index]),
+      otherSelected: ![0, 1, 2, 5].includes(s.ratio),
+      counts: [1, 2, 3, 4].map(n => ({ n, name: "生成 " + n + " 张", selected: n === s.count, pick: () => this.setCount(n) })),
+      ratioMenu: s.menu === "ratio", countMenu: s.menu === "count", actionMenu: s.menu === "actions",
+      showRatios: toggle("ratio"), showCounts: toggle("count"), showActions: toggle("actions"),
+      dismissMenu: () => this.setState({ menu: "" }),
+      collapse: () => this.setState({ collapsed: !s.collapsed, menu: "", confirming: false, x: 0, y: 0 }),
+      collapseLabel: s.collapsed ? "展开图片设置" : "收起图片设置",
+      close: () => this.setState({ visible: false, menu: "", confirming: false }),
+      reopen: () => this.setState({ visible: true, trashed: false, collapsed: false, x: 0, y: 0 }),
+      confirmTrash: () => this.setState({ confirming: true, menu: "" }),
+      cancelTrash: () => this.setState({ confirming: false }),
+      moveToTrash: () => this.setState({ trashed: true, visible: false, confirming: false, status: "" }),
+      promptTab: s.tab === "prompt", outputTab: s.tab === "output",
+      goPrompt: () => this.setState({ tab: "prompt", menu: "" }),
+      goOutput: () => this.setState({ tab: "output", menu: "" }),
+      editPrompt: (e) => this.setState({ prompt: e.currentTarget.value, status: "" }),
+      pickFree: select(-1),
+      editWidth: (e) => this.editPixels("width", e.currentTarget.value),
+      editHeight: (e) => this.editPixels("height", e.currentTarget.value),
+      normalizeWidth: () => this.setState({ widthText: String(s.width) }),
+      normalizeHeight: () => this.setState({ heightText: String(s.height) }),
+      commitPixel,
+      invalidWidth: !validPixels(s.widthText), invalidHeight: !validPixels(s.heightText), invalid: !isValid,
+      disableGenerate: !canGenerate, generateLabel: "生成 " + countLabel + "图片",
+      hasStatus: !!s.status,
+      generate: () => {
+        if (canGenerate) this.setState({ status: "生成预览 · " + countLabel + " · " + size + " px", menu: "" });
+      },
+      less: () => this.setCount(s.count - 1), more: () => this.setCount(s.count + 1),
+      minCount: s.count === 1, maxCount: s.count === 4,
+      onStageKey: (e) => {
+        if (e.key === "Escape" && (s.menu || s.confirming)) {
+          e.stopPropagation();
+          this.setState({ menu: "", confirming: false });
+        }
+      },
+      pointerStart: (e) => this.beginDrag(e), pointerMove: (e) => this.moveDrag(e),
+      pointerEnd: () => { this.drag = null; }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+.viewer{width:100%;min-width:0;min-height:0;display:flex;flex:1}
+.viewport{width:100%;min-height:0;overflow:auto;overscroll-behavior:contain;position:relative;border-radius:6px;background:repeating-conic-gradient(#f4f4f4 0% 25%,#fafafa 0% 50%) 50%/20px 20px;outline:none;scrollbar-width:thin;scrollbar-color:#d0d0d0 transparent}
+.viewport:focus-visible{outline:2px solid #888;outline-offset:-2px}
+.viewport[data-zoomed=true]{cursor:grab}
+.viewport[data-zoomed=true]:active{cursor:grabbing}
+.stage{display:flex;align-items:center;justify-content:center;min-width:100%;min-height:100%;box-sizing:border-box;padding:16px}
+.image{display:block;flex:none;max-width:none;max-height:none;object-fit:contain;user-select:none;background:transparent}

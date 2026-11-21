@@ -1,0 +1,210 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Choice.dc.html": {
+      "h": 624,
+      "title": "C · 双入口",
+      "w": 840,
+      "x": 1840,
+      "y": 0
+    },
+    "Drop.dc.html": {
+      "h": 624,
+      "title": "B · 拖放提示",
+      "w": 840,
+      "x": 920,
+      "y": 0
+    },
+    "GalleryCanvasCover.dc.html": {
+      "expand": "fill",
+      "h": 690,
+      "is_interactive": true,
+      "page": "all-canvases",
+      "title": "A · 封面网格",
+      "w": 1040,
+      "x": 0,
+      "y": 0
+    },
+    "GalleryCanvasPreview.dc.html": {
+      "expand": "fill",
+      "h": 690,
+      "is_interactive": true,
+      "page": "all-canvases",
+      "title": "C · 侧栏速览",
+      "w": 1040,
+      "x": 2240,
+      "y": 0
+    },
+    "GalleryCanvasTimeline.dc.html": {
+      "expand": "fill",
+      "h": 690,
+      "is_interactive": true,
+      "page": "all-canvases",
+      "title": "B · 时间分组",
+      "w": 1040,
+      "x": 1120,
+      "y": 0
+    },
+    "GalleryImageInspect.dc.html": {
+      "expand": "fill",
+      "h": 690,
+      "is_interactive": true,
+      "page": "all-images",
+      "title": "C · 瀑布与详情",
+      "w": 1040,
+      "x": 2240,
+      "y": 0
+    },
+    "GalleryImageJustified.dc.html": {
+      "expand": "fill",
+      "h": 690,
+      "is_interactive": true,
+      "page": "all-images",
+      "title": "B · 齐边拼排",
+      "w": 1040,
+      "x": 1120,
+      "y": 0
+    },
+    "GalleryImageMasonry.dc.html": {
+      "expand": "fill",
+      "h": 690,
+      "is_interactive": true,
+      "page": "all-images",
+      "title": "A · 跨列瀑布",
+      "w": 1040,
+      "x": 0,
+      "y": 0
+    },
+    "GenerationNoticeText.dc.html": {
+      "h": 850,
+      "is_interactive": true,
+      "page": "generation-notices",
+      "title": "A · 文字直达",
+      "w": 980,
+      "x": 0,
+      "y": 0
+    },
+    "GenerationNoticeImages.dc.html": {
+      "h": 850,
+      "is_interactive": true,
+      "page": "generation-notices",
+      "title": "B · 图片预览",
+      "w": 980,
+      "x": 1060,
+      "y": 0
+    },
+    "GenerationNoticeSummary.dc.html": {
+      "h": 850,
+      "is_interactive": true,
+      "page": "generation-notices",
+      "title": "C · 按画布汇总",
+      "w": 980,
+      "x": 2120,
+      "y": 0
+    },
+    "ImageAspectCards.dc.html": {
+      "h": 448,
+      "is_interactive": true,
+      "page": "image-inspector",
+      "title": "C · 画幅卡片",
+      "w": 384,
+      "x": 928,
+      "y": 0
+    },
+    "ImageComposer.dc.html": {
+      "h": 448,
+      "is_interactive": true,
+      "page": "image-inspector",
+      "title": "A · 编辑器式",
+      "w": 384,
+      "x": 0,
+      "y": 0
+    },
+    "ImageProperties.dc.html": {
+      "h": 448,
+      "is_interactive": true,
+      "page": "image-inspector",
+      "title": "B · 参数清单",
+      "w": 384,
+      "x": 464,
+      "y": 0
+    },
+    "ImageTwoPage.dc.html": {
+      "h": 448,
+      "is_interactive": true,
+      "page": "image-inspector",
+      "title": "E · 双页工作台",
+      "w": 384,
+      "x": 728,
+      "y": 568
+    },
+    "ImageWideTray.dc.html": {
+      "h": 448,
+      "is_interactive": true,
+      "page": "image-inspector",
+      "title": "D · 横向工具盘",
+      "w": 536,
+      "x": 112,
+      "y": 568
+    },
+    "Main.dc.html": {
+      "h": 624,
+      "title": "A · 居中图标",
+      "w": 840,
+      "x": 0,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-18T16:55:04Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {},
+  "order": [
+    "Main.dc.html",
+    "Drop.dc.html",
+    "Choice.dc.html",
+    "ImageComposer.dc.html",
+    "ImageProperties.dc.html",
+    "ImageAspectCards.dc.html",
+    "ImageWideTray.dc.html",
+    "ImageTwoPage.dc.html",
+    "GalleryCanvasCover.dc.html",
+    "GalleryCanvasTimeline.dc.html",
+    "GalleryCanvasPreview.dc.html",
+    "GalleryImageMasonry.dc.html",
+    "GalleryImageJustified.dc.html",
+    "GalleryImageInspect.dc.html",
+    "GenerationNoticeText.dc.html",
+    "GenerationNoticeImages.dc.html",
+    "GenerationNoticeSummary.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Page 1"
+    },
+    {
+      "id": "image-inspector",
+      "name": "图片创作 · 五版对照"
+    },
+    {
+      "id": "all-canvases",
+      "name": "全部画布 · 三版"
+    },
+    {
+      "id": "all-images",
+      "name": "全部图片 · 三版"
+    },
+    {
+      "id": "generation-notices",
+      "name": "生成通知 · 三版"
+    }
+  ],
+  "title": "Canvepp 空画布 · 三版对照"
+}

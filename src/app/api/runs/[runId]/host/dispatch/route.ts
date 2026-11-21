@@ -1,0 +1,4 @@
+import {hostRequestBody} from '@/server/host-request';
+import {getStore} from '@/server/store';import {authorize,checkOrigin} from '@/server/security';import {assert,publicError} from '@/server/errors';import {dispatchHostRun} from '@/server/host-dispatch';
+export const runtime='nodejs';export const dynamic='force-dynamic';
+export async function POST(request:Request,{params}:{params:Promise<{runId:string}>}){const headers={'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};try{checkOrigin(request);const store=getStore();authorize(store,request);const body=await hostRequestBody(request);assert(typeof body.requestId==='string'&&typeof body.hostContext==='string','缺少确认信息');return Response.json(await dispatchHostRun(store,(await params).runId,body.hostContext),{headers});}catch(error){const e=publicError(error);return Response.json(e,{status:e.status,headers});}}

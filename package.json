@@ -1,0 +1,40 @@
+{
+  "name": "canvepp",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Local-first image workflow canvas with immutable runs and a safe provider boundary",
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3210",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 3210",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "mcp": "node scripts/mcp-server.mjs",
+    "package:plugin": "node scripts/package-plugin.mjs",
+    "test:mcp": "node scripts/verify-mcp.mjs"
+  },
+  "dependencies": {
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "@xyflow/react": "^12.9.0",
+    "lucide-react": "^0.468.0",
+    "better-sqlite3": "^12.0.0",
+    "sharp": "^0.34.0",
+    "jszip": "^3.10.1",
+    "zod": "^4.0.0",
+    "@modelcontextprotocol/sdk": "^1.25.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/better-sqlite3": "^7.6.0",
+    "vitest": "^4.0.0",
+    "tsx": "^4.20.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

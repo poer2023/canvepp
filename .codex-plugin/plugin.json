@@ -1,0 +1,25 @@
+{
+  "name": "canvepp",
+  "version": "0.3.0",
+  "description": "本地图像节点画布：自动启动、Codex 原生生图与不可变结果版本。",
+  "author": {
+    "name": "hao"
+  },
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Canvepp 图像画布",
+    "shortDescription": "本地图像工作流与不可变版本",
+    "developerName": "hao",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "brandColor": "#343434",
+    "defaultPrompt": [
+      "打开 Canvepp 图像画布"
+    ],
+    "longDescription": "打开本地图像画布，选择参考图并生成。结果自动回到画布，可从历史打开对应的 Codex 执行会话。"
+  }
+}

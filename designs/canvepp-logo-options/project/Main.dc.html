@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Canvepp · 画布坐标</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="box-sizing:border-box;width:416px;height:480px;display:flex;flex-direction:column;padding:32px;background:{{paper}};color:#262626;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:5px">
+      <div style="font-size:24px;line-height:1.2;font-weight:650">画布坐标</div>
+      <div style="font-size:13px;color:#646462">角标与自由画布</div>
+    </div>
+    <span style="font-size:12px;line-height:1.8;font-variant-numeric:tabular-nums;color:#646462">01</span>
+  </div>
+  <div style="flex:1;display:grid;place-items:center" role="img" aria-label="画布坐标的 Canvepp Logo"><svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 100 100" aria-hidden="true" ><rect width="100" height="100" rx="23" fill="{{tile}}"/><path d="M21 40V26a5 5 0 0 1 5-5h14M60 21h14a5 5 0 0 1 5 5v14m0 20v14a5 5 0 0 1-5 5H60m-20 0H26a5 5 0 0 1-5-5V60" fill="none" stroke="{{ink}}" stroke-width="6" stroke-linecap="round"/><rect x="36" y="36" width="28" height="28" rx="5" fill="{{accent}}"/></svg></div>
+  <div style="display:flex;border:1px solid #B8B8B4;border-radius:12px;overflow:hidden">
+    <div style="width:50%;height:76px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;gap:20px"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 100 100" aria-hidden="true" ><rect width="100" height="100" rx="23" fill="{{tile}}"/><path d="M21 40V26a5 5 0 0 1 5-5h14M60 21h14a5 5 0 0 1 5 5v14m0 20v14a5 5 0 0 1-5 5H60m-20 0H26a5 5 0 0 1-5-5V60" fill="none" stroke="{{ink}}" stroke-width="6" stroke-linecap="round"/><rect x="36" y="36" width="28" height="28" rx="5" fill="{{accent}}"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 100 100" aria-hidden="true" ><rect width="100" height="100" rx="23" fill="{{tile}}"/><path d="M21 40V26a5 5 0 0 1 5-5h14M60 21h14a5 5 0 0 1 5 5v14m0 20v14a5 5 0 0 1-5 5H60m-20 0H26a5 5 0 0 1-5-5V60" fill="none" stroke="{{ink}}" stroke-width="6" stroke-linecap="round"/><rect x="36" y="36" width="28" height="28" rx="5" fill="{{accent}}"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 100 100" aria-hidden="true" ><rect width="100" height="100" rx="23" fill="{{tile}}"/><path d="M21 40V26a5 5 0 0 1 5-5h14M60 21h14a5 5 0 0 1 5 5v14m0 20v14a5 5 0 0 1-5 5H60m-20 0H26a5 5 0 0 1-5-5V60" fill="none" stroke="{{ink}}" stroke-width="6" stroke-linecap="round"/><rect x="36" y="36" width="28" height="28" rx="5" fill="{{accent}}"/></svg></div>
+    <div style="width:50%;height:76px;background:#202020;display:flex;align-items:center;justify-content:center;gap:20px"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 100 100" aria-hidden="true" ><rect width="100" height="100" rx="23" fill="{{tile}}"/><path d="M21 40V26a5 5 0 0 1 5-5h14M60 21h14a5 5 0 0 1 5 5v14m0 20v14a5 5 0 0 1-5 5H60m-20 0H26a5 5 0 0 1-5-5V60" fill="none" stroke="{{ink}}" stroke-width="6" stroke-linecap="round"/><rect x="36" y="36" width="28" height="28" rx="5" fill="{{accent}}"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 100 100" aria-hidden="true" ><rect width="100" height="100" rx="23" fill="{{tile}}"/><path d="M21 40V26a5 5 0 0 1 5-5h14M60 21h14a5 5 0 0 1 5 5v14m0 20v14a5 5 0 0 1-5 5H60m-20 0H26a5 5 0 0 1-5-5V60" fill="none" stroke="{{ink}}" stroke-width="6" stroke-linecap="round"/><rect x="36" y="36" width="28" height="28" rx="5" fill="{{accent}}"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 100 100" aria-hidden="true" ><rect width="100" height="100" rx="23" fill="{{tile}}"/><path d="M21 40V26a5 5 0 0 1 5-5h14M60 21h14a5 5 0 0 1 5 5v14m0 20v14a5 5 0 0 1-5 5H60m-20 0H26a5 5 0 0 1-5-5V60" fill="none" stroke="{{ink}}" stroke-width="6" stroke-linecap="round"/><rect x="36" y="36" width="28" height="28" rx="5" fill="{{accent}}"/></svg></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"paper":{"editor":"color","default":"#F1F1ED"},"tile":{"editor":"color","default":"#222324"},"ink":{"editor":"color","default":"#F7F7F3"},"accent":{"editor":"color","default":"#BCE996"},"$preview":{"width":416,"height":480}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      paper: this.props.paper ?? '#F1F1ED',
+      tile: this.props.tile ?? '#222324',
+      ink: this.props.ink ?? '#F7F7F3',
+      accent: this.props.accent ?? '#BCE996'
+    };
+  }
+}
+</script>
+</body>
+</html>

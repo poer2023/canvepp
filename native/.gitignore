@@ -1,0 +1,4 @@
+build/
+.mygo/
+canvepp
+*.test

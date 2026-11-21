@@ -1,0 +1,14 @@
+{
+  "name": "Canvepp Native",
+  "identifier": "app.canvepp.native",
+  "version": "0.6.12",
+  "icon": "assets/canvepp-icon.png",
+  "urlSchemes": ["canvepp"],
+  "out": "build",
+  "windows": {
+    "displayName": "Canvepp",
+    "installDirName": "Canvepp",
+    "installerInclude": "scripts/windows-installer.nsh"
+  },
+  "description": "原生图像创作画布"
+}

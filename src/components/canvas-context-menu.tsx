@@ -1,0 +1,10 @@
+'use client';
+import { useEffect, useRef, type ReactNode } from 'react';
+export interface CanvasMenuAction {label:string;shortcut?:string;icon:ReactNode;onClick:()=>void;disabled?:boolean;danger?:boolean;}
+export function CanvasContextMenu({x,y,actions,onClose}:{x:number;y:number;actions:CanvasMenuAction[];onClose:()=>void}) {
+    const ref=useRef<HTMLDivElement>(null),close=useRef(onClose);close.current=onClose;
+    useEffect(()=>{const previous=document.activeElement as HTMLElement|null;ref.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();const dismiss=(event:Event)=>{if(!ref.current?.contains(event.target as Node))close.current();};window.addEventListener('pointerdown',dismiss,true);window.addEventListener('wheel',dismiss,true);window.addEventListener('resize',dismiss);return()=>{window.removeEventListener('pointerdown',dismiss,true);window.removeEventListener('wheel',dismiss,true);window.removeEventListener('resize',dismiss);previous?.focus();};},[]);
+    return <div ref={ref} className="canvas-context-menu" role="menu" aria-label="画布操作" style={{left:Math.max(8,Math.min(x,window.innerWidth-208)),top:Math.max(8,Math.min(y,window.innerHeight-actions.length*36-18))}} onContextMenu={event=>event.preventDefault()} onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();onClose();}if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();const buttons=Array.from(ref.current!.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')),index=buttons.indexOf(document.activeElement as HTMLButtonElement);buttons[event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowDown'?1:buttons.length-1))%buttons.length]?.focus();}}}>
+        {actions.map(action=><button role="menuitem" key={action.label} disabled={action.disabled} className={action.danger?'is-danger':''} onClick={()=>{onClose();action.onClick();}}>{action.icon}<span>{action.label}</span>{action.shortcut&&<kbd>{action.shortcut}</kbd>}</button>)}
+    </div>;
+}
